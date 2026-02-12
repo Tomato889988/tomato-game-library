@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="touch-action" content="manipulation"> <!-- 关键修复：移动端触摸行为优化 -->
+    <meta name="touch-action" content="manipulation">
     <title>番茄制作2048 - 手机完美版</title>
     <style>
         * {
@@ -11,7 +11,7 @@
             margin: 0;
             padding: 0;
             font-family: 'Microsoft YaHei', 'Arial', sans-serif;
-            -webkit-tap-highlight-color: transparent; /* 移除移动端点击高亮 */
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
@@ -19,7 +19,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-start; /* 修复移动端垂直居中导致按钮被遮挡 */
+            justify-content: flex-start;
             min-height: 100vh;
             padding: 15px 10px;
             overflow: hidden;
@@ -33,7 +33,7 @@
             flex-direction: column;
             align-items: center;
             gap: 10px;
-            margin-top: 10px; /* 移动端顶部留白 */
+            margin-top: 10px;
         }
 
         .header {
@@ -45,7 +45,7 @@
         }
 
         .title {
-            font-size: 32px; /* 适配手机字体大小 */
+            font-size: 32px;
             font-weight: bold;
             color: #776e65;
         }
@@ -61,7 +61,7 @@
             border-radius: 5px;
             color: white;
             text-align: center;
-            min-width: 65px; /* 适配手机宽度 */
+            min-width: 65px;
             position: relative;
         }
 
@@ -105,7 +105,6 @@
             text-shadow: 0 0 5px #ffd700;
         }
 
-        /* 按钮核心修复：增大点击区域 + 确保可触摸 */
         .btn-group {
             width: 100%;
             display: flex;
@@ -118,7 +117,7 @@
             background-color: #8f7a66;
             color: white;
             border: none;
-            padding: 10px 12px; /* 增大按钮内边距 */
+            padding: 10px 12px;
             border-radius: 6px;
             font-size: 14px;
             font-weight: bold;
@@ -126,14 +125,14 @@
             transition: all 0.2s;
             position: relative;
             overflow: hidden;
-            min-width: 80px; /* 确保按钮最小宽度，易点击 */
-            touch-action: manipulation; /* 允许触摸操作 */
-            -webkit-user-select: none; /* 禁止文字选中 */
+            min-width: 80px;
+            touch-action: manipulation;
+            -webkit-user-select: none;
             user-select: none;
         }
         .control-btn:hover, .control-btn:active {
             background-color: #9f8a76;
-            transform: scale(0.98); /* 弱化按压效果，避免误判 */
+            transform: scale(0.98);
         }
 
         .difficulty-selector {
@@ -145,7 +144,7 @@
         }
 
         .difficulty-btn {
-            padding: 8px 10px; /* 增大难度按钮点击区域 */
+            padding: 8px 10px;
             border: none;
             border-radius: 5px;
             background-color: #bbada0;
@@ -172,12 +171,11 @@
             margin: 5px 0;
         }
 
-        /* 游戏网格适配手机 */
+        /* 核心修复：网格容器布局，确保宽高比绝对一致 */
         .grid-container {
             width: 100%;
-            max-width: 350px; /* 缩小网格适配手机屏幕 */
-            height: 0;
-            padding-bottom: 100%; /* 保持正方形比例 */
+            max-width: 350px;
+            aspect-ratio: 1/1; /* 替代padding-bottom，更稳定的正方形 */
             background-color: #bbada0;
             border-radius: 10px;
             padding: 8px;
@@ -189,7 +187,7 @@
         .grid-row {
             display: flex;
             margin-bottom: 8px;
-            height: calc(25% - 6px); /* 适配百分比高度 */
+            height: calc(25% - 6px);
             position: relative;
         }
 
@@ -209,15 +207,14 @@
             margin-right: 0;
         }
 
+        /* 核心修复：方块基础样式适配 */
         .tile {
             position: absolute;
-            width: calc(25% - 6px);
-            height: calc(25% - 6px);
             border-radius: 5px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 28px; /* 适配手机字体 */
+            font-size: clamp(18px, 6vw, 28px); /* 响应式字体大小 */
             font-weight: bold;
             transition: all 0.15s ease-out;
             animation: tilePop 0.2s ease;
@@ -243,21 +240,20 @@
         .tile-16 { background-color: #f59563; color: #f9f6f2; }
         .tile-32 { background-color: #f67c5f; color: #f9f6f2; }
         .tile-64 { background-color: #f65e3b; color: #f9f6f2; }
-        .tile-128 { background-color: #edcf72; color: #f9f6f2; font-size: 22px; }
-        .tile-256 { background-color: #edcc61; color: #f9f6f2; font-size: 22px; }
-        .tile-512 { background-color: #edc850; color: #f9f6f2; font-size: 22px; }
-        .tile-1024 { background-color: #edc53f; color: #f9f6f2; font-size: 20px; }
-        .tile-2048 { background-color: #edc22e; color: #f9f6f2; font-size: 20px; }
-        .tile-super { background-color: #3c3a32; color: #f9f6f2; font-size: 18px; }
+        .tile-128 { background-color: #edcf72; color: #f9f6f2; font-size: clamp(16px, 5vw, 22px); }
+        .tile-256 { background-color: #edcc61; color: #f9f6f2; font-size: clamp(16px, 5vw, 22px); }
+        .tile-512 { background-color: #edc850; color: #f9f6f2; font-size: clamp(16px, 5vw, 22px); }
+        .tile-1024 { background-color: #edc53f; color: #f9f6f2; font-size: clamp(14px, 4vw, 20px); }
+        .tile-2048 { background-color: #edc22e; color: #f9f6f2; font-size: clamp(14px, 4vw, 20px); }
+        .tile-super { background-color: #3c3a32; color: #f9f6f2; font-size: clamp(12px, 3vw, 18px); }
 
-        /* 弹窗核心修复：z-index 提升 + 禁止触摸穿透 */
         .modal {
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            background: rgba(238, 228, 218, 0.98); /* 更浓的遮罩 */
+            background: rgba(238, 228, 218, 0.98);
             display: flex; align-items: center; justify-content: center;
-            z-index: 9999; /* 大幅提升层级，确保覆盖所有元素 */
+            z-index: 9999;
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.3s;
@@ -265,7 +261,7 @@
         }
         .modal.active {
             opacity: 1;
-            pointer-events: auto; /* 确保弹窗可点击，背后不可点 */
+            pointer-events: auto;
         }
         .modal-content {
             background: white;
@@ -320,7 +316,6 @@
             color: #f65e3b;
         }
 
-        /* 排行榜适配手机 */
         .ranking-modal .modal-content {
             padding: 20px 15px;
             max-width: 320px;
@@ -347,7 +342,7 @@
             background-color: #8f7a66;
         }
         .ranking-list {
-            max-height: 250px; /* 适配手机高度 */
+            max-height: 250px;
             overflow-y: auto;
             margin: 10px 0;
         }
@@ -397,7 +392,6 @@
             background-color: #e54a28;
         }
 
-        /* 音效提示适配手机 */
         .sound-tip {
             position: fixed;
             bottom: 15px;
@@ -510,7 +504,7 @@
             hard: { tileProb: {2: 0.7, 4: 0.25, 8: 0.05}, initialTiles: 3 }
         };
 
-        // 音效资源（改用更稳定的CDN）
+        // 音效资源
         const sounds = {
             move: new Audio('https://cdn.jsdelivr.net/gh/fawazahmed0/audio-samples@main/mixkit-select-click-1109.mp3'),
             merge: new Audio('https://cdn.jsdelivr.net/gh/fawazahmed0/audio-samples@main/mixkit-arcade-mechanical-bling-210.mp3'),
@@ -520,7 +514,7 @@
             newRecord: new Audio('https://cdn.jsdelivr.net/gh/fawazahmed0/audio-samples@main/mixkit-achievement-bell-600.mp3')
         };
 
-        // DOM元素（提前缓存，避免重复查询）
+        // DOM元素缓存
         const dom = {
             score: document.getElementById('score'),
             bestScore: document.getElementById('best-score'),
@@ -546,24 +540,21 @@
             soundTip: document.getElementById('sound-tip')
         };
 
-        // ========== 核心修复：移动端事件绑定优化 ==========
-        // 封装点击事件绑定（同时支持click和touch）
+        // 封装点击事件绑定
         function bindClick(el, callback) {
-            // 防止重复触发
             let isClicked = false;
             const handler = (e) => {
                 e.preventDefault();
                 if (isClicked) return;
                 isClicked = true;
                 callback();
-                setTimeout(() => isClicked = false, 200); // 防抖
+                setTimeout(() => isClicked = false, 200);
             };
-            // 同时绑定click和touchstart（移动端优先）
             el.addEventListener('touchstart', handler, { passive: false });
             el.addEventListener('click', handler);
         }
 
-        // ========== 排行榜功能 ==========
+        // 排行榜功能
         function getRankingList(level = difficulty) {
             const rankingStr = localStorage.getItem('2048-ranking-list');
             const allRanking = rankingStr ? JSON.parse(rankingStr) : [];
@@ -663,13 +654,12 @@
             }
         }
 
-        // ========== 音效初始化（修复移动端播放） ==========
+        // 音效初始化
         function initSound() {
             if (soundInited) return;
             
             dom.soundTip.classList.remove('active');
             
-            // 预加载音效
             Object.values(sounds).forEach(sound => {
                 sound.load();
                 sound.volume = 0.5;
@@ -689,14 +679,13 @@
             }
         }
 
-        // ========== 游戏核心逻辑 ==========
+        // 游戏核心逻辑
         function init() {
             grid = Array(4).fill().map(() => Array(4).fill(0));
             score = 0;
             gameOver = false;
             gameWon = false;
             
-            // 隐藏所有弹窗
             dom.winModal.classList.remove('active');
             dom.gameOverModal.classList.remove('active');
             dom.rankingModal.classList.remove('active');
@@ -704,14 +693,16 @@
             dom.score.textContent = score;
             updateBestScore();
             
-            // 生成初始方块
             const { initialTiles } = difficultyConfig[difficulty];
             for (let i = 0; i < initialTiles; i++) {
                 addRandomTile();
             }
             
-            render();
-            if (soundInited) playSound('newTile');
+            // 核心修复：延迟渲染确保容器尺寸已计算
+            setTimeout(() => {
+                render();
+                if (soundInited) playSound('newTile');
+            }, 50);
         }
 
         function addRandomTile() {
@@ -741,15 +732,20 @@
             grid[i][j] = value;
         }
 
-        // 修复移动端方块位置计算
+        // 核心修复：方块位置计算（精准适配所有屏幕）
         function render() {
             const tiles = dom.gridContainer.querySelectorAll('.tile');
             tiles.forEach(tile => tile.remove());
 
-            // 获取网格实际尺寸
+            // 强制刷新布局，确保获取准确尺寸
+            dom.gridContainer.offsetHeight;
+            
             const gridWidth = dom.gridContainer.offsetWidth;
-            const cellGap = 8; // 单元格间距
-            const cellSize = (gridWidth - 4 * cellGap) / 4; // 单个单元格尺寸
+            const padding = 8; // 容器内边距
+            const gap = 8; // 单元格间距
+            const cellCount = 4; // 4x4网格
+            // 精准计算单个方块尺寸（扣除内边距和间距）
+            const cellSize = (gridWidth - 2 * padding - (cellCount - 1) * gap) / cellCount;
 
             for (let i = 0; i < 4; i++) {
                 for (let j = 0; j < 4; j++) {
@@ -761,9 +757,12 @@
                     tile.classList.add('tile', tileClass);
                     tile.textContent = value;
                     
-                    // 精确计算位置（适配百分比布局）
-                    tile.style.top = `${i * (cellSize + cellGap) + cellGap}px`;
-                    tile.style.left = `${j * (cellSize + cellGap) + cellGap}px`;
+                    // 精准计算每个方块的位置（从容器内边距开始）
+                    const top = padding + i * (cellSize + gap);
+                    const left = padding + j * (cellSize + gap);
+                    
+                    tile.style.top = `${top}px`;
+                    tile.style.left = `${left}px`;
                     tile.style.width = `${cellSize}px`;
                     tile.style.height = `${cellSize}px`;
                     
@@ -832,7 +831,7 @@
             showGameOverModal();
         }
 
-        // 移动逻辑（修复移动端操作）
+        // 移动逻辑
         function move(direction) {
             if (gameOver || (gameWon && dom.winModal.classList.contains('active'))) return;
 
@@ -911,33 +910,27 @@
             }
         }
 
-        // ========== 绑定所有事件（核心修复） ==========
+        // 绑定所有事件
         function bindEvents() {
-            // 首次点击激活音效
             document.addEventListener('touchstart', initSound, { once: true, passive: false });
             document.addEventListener('click', initSound, { once: true });
 
-            // 重新开始按钮
             bindClick(dom.newGameBtn, init);
             bindClick(dom.restartWinBtn, init);
             bindClick(dom.restartOverBtn, init);
             
-            // 音效开关
             bindClick(dom.soundToggleBtn, toggleSound);
             
-            // 继续挑战
             bindClick(dom.continueBtn, () => {
                 closeModals();
                 gameWon = false;
                 playSound('move');
             });
             
-            // 难度选择按钮
             dom.difficultyBtns.forEach(btn => {
                 bindClick(btn, () => changeDifficulty(btn.dataset.level));
             });
 
-            // 排行榜按钮
             bindClick(dom.rankingBtn, () => {
                 currentRankingTab = difficulty;
                 dom.rankingTabs.forEach(tab => {
@@ -948,7 +941,6 @@
                 playSound('move');
             });
             
-            // 排行榜tab切换
             dom.rankingTabs.forEach(tab => {
                 bindClick(tab, () => {
                     currentRankingTab = tab.dataset.tab;
@@ -958,7 +950,6 @@
                 });
             });
             
-            // 游戏结束后查看排行榜
             bindClick(dom.viewRankingBtn, () => {
                 dom.gameOverModal.classList.remove('active');
                 currentRankingTab = difficulty;
@@ -970,16 +961,13 @@
                 playSound('move');
             });
             
-            // 关闭排行榜
             bindClick(dom.closeRankingBtn, () => {
                 dom.rankingModal.classList.remove('active');
                 playSound('move');
             });
             
-            // 清空排行榜
             bindClick(dom.clearRankingBtn, () => clearRankingList(currentRankingTab));
             
-            // 键盘控制（适配手机外接键盘）
             document.addEventListener('keydown', (e) => {
                 if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) e.preventDefault();
                 if (gameOver || (gameWon && dom.winModal.classList.contains('active'))) return;
@@ -993,7 +981,7 @@
                 }
             });
             
-            // 触摸滑动控制（核心修复：防抖 + 精准判断）
+            // 触摸滑动控制
             let touchStartX = 0, touchStartY = 0;
             let touchTimeout = null;
             
@@ -1014,12 +1002,11 @@
                 if (gameOver || (gameWon && dom.winModal.classList.contains('active'))) return;
                 e.preventDefault();
                 
-                // 防抖：避免快速滑动多次触发
                 clearTimeout(touchTimeout);
                 touchTimeout = setTimeout(() => {
                     const dx = e.changedTouches[0].clientX - touchStartX;
                     const dy = e.changedTouches[0].clientY - touchStartY;
-                    const threshold = 20; // 降低滑动阈值，更灵敏
+                    const threshold = 20;
                     
                     if (Math.abs(dx) > Math.abs(dy)) {
                         if (dx > threshold) move('right');
@@ -1031,17 +1018,24 @@
                 }, 50);
             }, { passive: false });
 
-            // 窗口大小变化时重新渲染（适配旋转屏幕）
-            window.addEventListener('resize', render);
+            // 窗口变化/旋转时重新渲染
+            window.addEventListener('resize', () => {
+                if (!gameOver) setTimeout(render, 50);
+            });
+            // 页面显示时重新渲染（解决切后台回来错位）
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden) setTimeout(render, 50);
+            });
         }
 
         // 初始化
         window.addEventListener('DOMContentLoaded', () => {
             bindEvents();
-            init();
-            updateBestScore();
-            // 强制重绘一次，修复移动端初始布局问题
-            setTimeout(render, 100);
+            // 确保容器加载完成后再初始化游戏
+            setTimeout(() => {
+                init();
+                updateBestScore();
+            }, 100);
         });
     </script>
 </body>
