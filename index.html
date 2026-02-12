@@ -184,17 +184,15 @@
             padding: 0 clamp(5px, 1vw, 8px);
         }
 
-        /* 核心适配：网格容器 - 全终端精准适配 */
         .grid-container {
-            width: min(90vw, 400px); /* 适配平板宽屏，最大400px */
-            aspect-ratio: 1/1; /* 绝对正方形，兼容所有设备 */
+            width: min(90vw, 400px);
+            aspect-ratio: 1/1;
             background-color: #bbada0;
             border-radius: clamp(8px, 2vw, 10px);
             padding: clamp(6px, 1.5vw, 8px);
             position: relative;
             touch-action: manipulation;
             margin: clamp(8px, 2vw, 10px) 0;
-            /* 修复不同浏览器渲染偏差 */
             box-sizing: border-box !important;
         }
 
@@ -221,7 +219,6 @@
             margin-right: 0;
         }
 
-        /* 核心适配：方块样式 - 全终端精准对齐 */
         .tile {
             position: absolute;
             border-radius: clamp(4px, 1vw, 5px);
@@ -232,7 +229,6 @@
             transition: all 0.15s ease-out;
             animation: tilePop 0.2s ease;
             touch-action: none;
-            /* 防止文字溢出 */
             overflow: hidden;
             white-space: nowrap;
             text-overflow: ellipsis;
@@ -251,7 +247,6 @@
             100% { transform: scale(1); opacity: 1; }
         }
 
-        /* 方块配色 + 响应式字体 */
         .tile-2 { background-color: #eee4da; color: #776e65; font-size: clamp(16px, 5vw, 28px); }
         .tile-4 { background-color: #ede0c8; color: #776e65; font-size: clamp(16px, 5vw, 28px); }
         .tile-8 { background-color: #f2b179; color: #f9f6f2; font-size: clamp(16px, 5vw, 28px); }
@@ -265,7 +260,6 @@
         .tile-2048 { background-color: #edc22e; color: #f9f6f2; font-size: clamp(12px, 4vw, 20px); }
         .tile-super { background-color: #3c3a32; color: #f9f6f2; font-size: clamp(10px, 3.5vw, 18px); }
 
-        /* 弹窗适配 - 全终端居中且不溢出 */
         .modal {
             position: fixed;
             top: 0; left: 0;
@@ -416,25 +410,6 @@
             background-color: #e54a28;
         }
 
-        .sound-tip {
-            position: fixed;
-            bottom: env(safe-area-inset-bottom, 15px);
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: rgba(0,0,0,0.7);
-            color: white;
-            padding: clamp(4px, 1.5vw, 6px) clamp(10px, 2.5vw, 12px);
-            border-radius: clamp(15px, 5vw, 20px);
-            font-size: clamp(11px, 3vw, 13px);
-            z-index: 999;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        .sound-tip.active {
-            opacity: 1;
-        }
-
-        /* 平板横屏适配 */
         @media (orientation: landscape) and (min-width: 768px) {
             body {
                 flex-direction: row;
@@ -452,7 +427,6 @@
             }
         }
 
-        /* 苹果刘海屏/灵动岛适配 */
         @supports (padding: max(0px)) {
             body {
                 padding-top: max(env(safe-area-inset-top), 15px);
@@ -462,9 +436,6 @@
             }
             .modal {
                 padding: max(env(safe-area-inset-top), 20px) max(env(safe-area-inset-right), 20px) max(env(safe-area-inset-bottom), 20px) max(env(safe-area-inset-left), 20px);
-            }
-            .sound-tip {
-                bottom: max(env(safe-area-inset-bottom), 15px);
             }
         }
     </style>
@@ -487,7 +458,6 @@
 
         <div class="btn-group">
             <button class="control-btn" id="new-game-btn">重新开始</button>
-            <button class="control-btn" id="sound-toggle">音效：开启</button>
             <button class="control-btn" id="ranking-btn">排行榜</button>
         </div>
 
@@ -541,45 +511,27 @@
         </div>
     </div>
 
-    <div class="sound-tip active" id="sound-tip">点击屏幕激活音效</div>
-
     <script>
-        // 核心变量
         let grid = [];
         let score = 0;
         let bestScore = 0;
         let gameOver = false;
         let gameWon = false;
-        let soundEnabled = true;
         let difficulty = 'easy';
-        let soundInited = false;
         let currentRankingTab = 'easy';
         
-        // 难度配置
         const difficultyConfig = {
             easy: { tileProb: {2: 0.95, 4: 0.05}, initialTiles: 2 },
             normal: { tileProb: {2: 0.85, 4: 0.15}, initialTiles: 2 },
             hard: { tileProb: {2: 0.7, 4: 0.25, 8: 0.05}, initialTiles: 3 }
         };
 
-        // 音效资源
-        const sounds = {
-            move: new Audio('https://cdn.jsdelivr.net/gh/fawazahmed0/audio-samples@main/mixkit-select-click-1109.mp3'),
-            merge: new Audio('https://cdn.jsdelivr.net/gh/fawazahmed0/audio-samples@main/mixkit-arcade-mechanical-bling-210.mp3'),
-            win: new Audio('https://cdn.jsdelivr.net/gh/fawazahmed0/audio-samples@main/mixkit-winning-chimes-2015.mp3'),
-            gameOver: new Audio('https://cdn.jsdelivr.net/gh/fawazahmed0/audio-samples@main/mixkit-failure-arcade-alert-notification-240.mp3'),
-            newTile: new Audio('https://cdn.jsdelivr.net/gh/fawazahmed0/audio-samples@main/mixkit-coin-collect-1587.mp3'),
-            newRecord: new Audio('https://cdn.jsdelivr.net/gh/fawazahmed0/audio-samples@main/mixkit-achievement-bell-600.mp3')
-        };
-
-        // DOM元素缓存
         const dom = {
             score: document.getElementById('score'),
             bestScore: document.getElementById('best-score'),
             bestScoreContainer: document.getElementById('best-score-container'),
             gridContainer: document.getElementById('grid-container'),
             newGameBtn: document.getElementById('new-game-btn'),
-            soundToggleBtn: document.getElementById('sound-toggle'),
             rankingBtn: document.getElementById('ranking-btn'),
             difficultyBtns: document.querySelectorAll('.difficulty-btn'),
             winModal: document.getElementById('win-modal'),
@@ -594,11 +546,9 @@
             rankingTabs: document.querySelectorAll('.ranking-tab'),
             rankingList: document.getElementById('ranking-list'),
             closeRankingBtn: document.getElementById('close-ranking-btn'),
-            clearRankingBtn: document.getElementById('clear-ranking-btn'),
-            soundTip: document.getElementById('sound-tip')
+            clearRankingBtn: document.getElementById('clear-ranking-btn')
         };
 
-        // 封装点击事件绑定（兼容所有终端）
         function bindClick(el, callback) {
             let isClicked = false;
             const handler = (e) => {
@@ -612,7 +562,6 @@
             el.addEventListener('click', handler);
         }
 
-        // 排行榜功能
         function getRankingList(level = difficulty) {
             const rankingStr = localStorage.getItem('2048-ranking-list');
             const allRanking = rankingStr ? JSON.parse(rankingStr) : [];
@@ -643,7 +592,6 @@
             const rankingList = getRankingList(difficulty);
             if (rankingList.length === 0 || score > rankingList[0].score) {
                 showNewRecordEffect();
-                playSound('newRecord');
             }
         }
 
@@ -708,36 +656,9 @@
                 
                 renderRankingList(level);
                 updateBestScore();
-                playSound('move');
             }
         }
 
-        // 音效初始化
-        function initSound() {
-            if (soundInited) return;
-            
-            dom.soundTip.classList.remove('active');
-            
-            Object.values(sounds).forEach(sound => {
-                sound.load();
-                sound.volume = 0.5;
-            });
-            
-            soundInited = true;
-            playSound('move');
-        }
-
-        function playSound(type) {
-            if (!soundEnabled || !sounds[type] || !soundInited) return;
-            try {
-                const soundClone = sounds[type].cloneNode();
-                soundClone.play().catch(err => console.log('音效播放:', err));
-            } catch (e) {
-                console.log('音效错误:', e.message);
-            }
-        }
-
-        // 游戏核心逻辑
         function init() {
             grid = Array(4).fill().map(() => Array(4).fill(0));
             score = 0;
@@ -756,10 +677,8 @@
                 addRandomTile();
             }
             
-            // 确保容器尺寸计算完成后渲染
             requestAnimationFrame(() => {
                 render();
-                if (soundInited) playSound('newTile');
             });
         }
 
@@ -790,26 +709,20 @@
             grid[i][j] = value;
         }
 
-        // 核心适配：方块位置精准计算（兼容所有终端）
         function render() {
             const tiles = dom.gridContainer.querySelectorAll('.tile');
             tiles.forEach(tile => tile.remove());
 
-            // 强制刷新布局，获取最终渲染尺寸
             dom.gridContainer.offsetHeight;
             
-            // 获取容器实际尺寸（兼容不同设备渲染）
             const gridRect = dom.gridContainer.getBoundingClientRect();
             const gridWidth = gridRect.width;
-            // 动态获取CSS中的padding和gap（适配不同终端的clamp值）
             const style = getComputedStyle(dom.gridContainer);
             const padding = parseFloat(style.paddingLeft);
             const gap = parseFloat(getComputedStyle(document.querySelector('.grid-cell')).marginRight);
             const cellCount = 4;
             
-            // 精准计算单个方块尺寸（消除所有舍入误差）
             const cellSize = (gridWidth - 2 * padding - (cellCount - 1) * gap) / cellCount;
-            // 四舍五入到小数点后2位，避免像素偏差
             const preciseCellSize = Math.round(cellSize * 100) / 100;
             const preciseGap = Math.round(gap * 100) / 100;
             const precisePadding = Math.round(padding * 100) / 100;
@@ -824,11 +737,9 @@
                     tile.classList.add('tile', tileClass);
                     tile.textContent = value;
                     
-                    // 精准计算位置（消除所有偏移）
                     const top = precisePadding + i * (preciseCellSize + preciseGap);
                     const left = precisePadding + j * (preciseCellSize + preciseGap);
                     
-                    // 使用px固定值，避免百分比偏差
                     tile.style.top = `${top}px`;
                     tile.style.left = `${left}px`;
                     tile.style.width = `${preciseCellSize}px`;
@@ -844,19 +755,6 @@
             }
         }
 
-        function vibrate() {
-            if (navigator.vibrate && soundEnabled && soundInited) {
-                navigator.vibrate(30);
-            }
-        }
-
-        function toggleSound() {
-            if (!soundInited) initSound();
-            soundEnabled = !soundEnabled;
-            dom.soundToggleBtn.textContent = soundEnabled ? '音效：开启' : '音效：关闭';
-            playSound('move');
-        }
-
         function changeDifficulty(level) {
             difficulty = level;
             dom.difficultyBtns.forEach(btn => {
@@ -864,19 +762,16 @@
             });
             updateBestScore();
             init();
-            if (soundInited) playSound('move');
         }
 
         function showWinModal() {
             dom.winScore.textContent = score;
-            if (soundInited) playSound('win');
             dom.winModal.classList.add('active');
             saveScoreToRanking(score);
         }
 
         function showGameOverModal() {
             gameOver = true;
-            if (soundInited) playSound('gameOver');
             dom.gameOverText.textContent = `最终得分：${score}`;
             dom.gameOverModal.classList.add('active');
             saveScoreToRanking(score);
@@ -899,7 +794,6 @@
             showGameOverModal();
         }
 
-        // 移动逻辑
         function move(direction) {
             if (gameOver || (gameWon && dom.winModal.classList.contains('active'))) return;
 
@@ -971,36 +865,25 @@
                 addRandomTile();
                 dom.score.textContent = score;
                 render();
-                vibrate();
-                playSound(merged ? 'merge' : 'move');
                 
                 if (!gameWon) checkGameOver();
             }
         }
 
-        // 绑定所有事件
         function bindEvents() {
-            // 首次交互激活音效（兼容iOS）
-            document.addEventListener('touchstart', initSound, { once: true, passive: false });
-            document.addEventListener('click', initSound, { once: true });
-
-            // 按钮事件
             bindClick(dom.newGameBtn, init);
             bindClick(dom.restartWinBtn, init);
             bindClick(dom.restartOverBtn, init);
-            bindClick(dom.soundToggleBtn, toggleSound);
+            
             bindClick(dom.continueBtn, () => {
                 closeModals();
                 gameWon = false;
-                playSound('move');
             });
             
-            // 难度选择
             dom.difficultyBtns.forEach(btn => {
                 bindClick(btn, () => changeDifficulty(btn.dataset.level));
             });
 
-            // 排行榜事件
             bindClick(dom.rankingBtn, () => {
                 currentRankingTab = difficulty;
                 dom.rankingTabs.forEach(tab => {
@@ -1008,7 +891,6 @@
                 });
                 renderRankingList(currentRankingTab);
                 dom.rankingModal.classList.add('active');
-                playSound('move');
             });
             
             dom.rankingTabs.forEach(tab => {
@@ -1016,7 +898,6 @@
                     currentRankingTab = tab.dataset.tab;
                     dom.rankingTabs.forEach(t => t.classList.toggle('active', t.dataset.tab === currentRankingTab));
                     renderRankingList(currentRankingTab);
-                    playSound('move');
                 });
             });
             
@@ -1028,17 +909,14 @@
                 });
                 renderRankingList(currentRankingTab);
                 dom.rankingModal.classList.add('active');
-                playSound('move');
             });
             
             bindClick(dom.closeRankingBtn, () => {
                 dom.rankingModal.classList.remove('active');
-                playSound('move');
             });
             
             bindClick(dom.clearRankingBtn, () => clearRankingList(currentRankingTab));
             
-            // 键盘控制（适配外接键盘）
             document.addEventListener('keydown', (e) => {
                 if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) e.preventDefault();
                 if (gameOver || (gameWon && dom.winModal.classList.contains('active'))) return;
@@ -1052,7 +930,6 @@
                 }
             });
             
-            // 触摸滑动控制（全终端精准识别）
             let touchStartX = 0, touchStartY = 0;
             let touchTimeout = null;
             
@@ -1077,7 +954,6 @@
                 touchTimeout = setTimeout(() => {
                     const dx = e.changedTouches[0].clientX - touchStartX;
                     const dy = e.changedTouches[0].clientY - touchStartY;
-                    // 自适应滑动阈值（不同屏幕尺寸）
                     const threshold = Math.min(20, Math.floor(window.innerWidth * 0.05));
                     
                     if (Math.abs(dx) > Math.abs(dy)) {
@@ -1090,7 +966,6 @@
                 }, 50);
             }, { passive: false });
 
-            // 自适应重绘（解决所有尺寸变化场景）
             const debounceRender = debounce(() => {
                 if (!gameOver) render();
             }, 50);
@@ -1100,11 +975,9 @@
             document.addEventListener('visibilitychange', () => {
                 if (!document.hidden) debounceRender();
             });
-            // 页面加载完成后强制重绘
             window.addEventListener('load', debounceRender);
         }
 
-        // 防抖函数（避免频繁重绘）
         function debounce(func, wait) {
             let timeout;
             return function() {
@@ -1115,17 +988,14 @@
             };
         }
 
-        // 初始化（确保DOM完全加载）
         window.addEventListener('DOMContentLoaded', () => {
             bindEvents();
-            // 等待样式加载完成后初始化
             setTimeout(() => {
                 init();
                 updateBestScore();
             }, 100);
         });
 
-        // 兼容iOS Safari的resize bug
         if (/(iPhone|iPad|iPod)/i.test(navigator.userAgent)) {
             window.addEventListener('resize', () => {
                 document.body.style.height = `${window.innerHeight}px`;
