@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>番茄制作2048 游戏 - 完整版</title>
+    <title>番茄制作2048 游戏 - 终极版</title>
     <style>
         * {
             box-sizing: border-box;
@@ -58,6 +58,34 @@
             color: white;
             text-align: center;
             min-width: 75px;
+            position: relative;
+        }
+
+        /* 新纪录特效样式 */
+        .best-score-container.new-record {
+            animation: recordFlash 0.5s ease infinite alternate;
+        }
+        @keyframes recordFlash {
+            0% { background-color: #bbada0; }
+            100% { background-color: #edc22e; }
+        }
+        .record-toast {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #f65e3b;
+            color: white;
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            animation: toastPop 1s ease;
+            opacity: 0;
+        }
+        @keyframes toastPop {
+            0% { opacity: 0; top: -15px; }
+            50% { opacity: 1; top: -20px; }
+            100% { opacity: 0; top: -25px; }
         }
 
         .score-label {
@@ -68,6 +96,10 @@
         .score, .best-score {
             font-size: 20px;
             font-weight: bold;
+        }
+        .best-score.new-record {
+            color: #fff600;
+            text-shadow: 0 0 5px #ffd700;
         }
 
         .btn-group {
@@ -86,11 +118,15 @@
             font-size: 14px;
             font-weight: bold;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
         }
-
         .control-btn:hover {
             background-color: #9f8a76;
+        }
+        .control-btn:active {
+            transform: scale(0.95);
         }
 
         .difficulty-selector {
@@ -108,15 +144,16 @@
             color: white;
             font-weight: bold;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: all 0.2s;
         }
-
         .difficulty-btn.active {
             background-color: #8f7a66;
         }
-
         .difficulty-btn:hover:not(.active) {
             background-color: #c9b9a8;
+        }
+        .difficulty-btn:active {
+            transform: scale(0.95);
         }
 
         .tips {
@@ -166,8 +203,17 @@
             justify-content: center;
             font-size: 36px;
             font-weight: bold;
-            transition: all 0.15s ease;
+            transition: all 0.15s ease-out; /* 更丝滑的过渡 */
             animation: tilePop 0.2s ease;
+        }
+        /* 合并动画优化 */
+        .tile-merge {
+            animation: tileMerge 0.3s ease;
+        }
+        @keyframes tileMerge {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
         }
 
         @keyframes tilePop {
@@ -188,11 +234,12 @@
         .tile-2048 { background-color: #edc22e; color: #f9f6f2; font-size: 28px; }
         .tile-super { background-color: #3c3a32; color: #f9f6f2; font-size: 24px; }
 
+        /* 弹窗通用样式 */
         .modal {
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            background: rgba(238, 228, 218, 0.85);
+            background: rgba(238, 228, 218, 0.95); /* 更浓的遮罩，防止穿透 */
             display: flex; align-items: center; justify-content: center;
             z-index: 100;
             opacity: 0;
@@ -201,13 +248,16 @@
         }
         .modal.active {
             opacity: 1;
-            pointer-events: all;
+            pointer-events: all; /* 完全禁止背后点击 */
         }
         .modal-content {
             background: white;
             padding: 30px;
             border-radius: 10px;
             text-align: center;
+            max-width: 350px;
+            width: 90%;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
         .modal-title {
             font-size: 28px;
@@ -228,23 +278,131 @@
             border-radius: 5px;
             margin: 5px;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: all 0.2s;
         }
         .modal-btn:hover {
             background-color: #9f8a76;
+        }
+        .modal-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* 过关恭喜画面特效 */
+        .win-modal .modal-title {
+            color: #edc22e;
+            animation: winBounce 1s ease infinite alternate;
+        }
+        @keyframes winBounce {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.1); }
+        }
+        .win-modal .modal-text {
+            font-size: 18px;
+            color: #f65e3b;
+        }
+
+        /* 排行榜分难度样式 */
+        .ranking-modal .modal-content {
+            padding: 20px;
+        }
+        .ranking-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+        .ranking-tab {
+            padding: 5px 15px;
+            border: none;
+            border-radius: 4px;
+            background-color: #bbada0;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .ranking-tab.active {
+            background-color: #8f7a66;
+        }
+        .ranking-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 15px 0;
+        }
+        .ranking-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 10px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 5px;
+        }
+        .ranking-item:first-child {
+            background-color: #f2b179;
+            color: white;
+            border-radius: 5px;
+        }
+        .ranking-item:nth-child(2) {
+            background-color: #cdc1b4;
+            color: white;
+            border-radius: 5px;
+        }
+        .ranking-item:nth-child(3) {
+            background-color: #bbada0;
+            color: white;
+            border-radius: 5px;
+        }
+        .rank-num {
+            font-weight: bold;
+            width: 30px;
+            text-align: center;
+        }
+        .rank-score {
+            font-weight: bold;
+            width: 60px;
+            text-align: right;
+        }
+        .rank-date {
+            font-size: 12px;
+            color: #776e65;
+        }
+        .clear-ranking-btn {
+            background-color: #f65e3b;
+            margin-top: 10px;
+        }
+        .clear-ranking-btn:hover {
+            background-color: #e54a28;
+        }
+
+        /* 首次点击激活音效提示 */
+        .sound-tip {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0,0,0,0.7);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            z-index: 99;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .sound-tip.active {
+            opacity: 1;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <div class="title">番茄制作2048</div> <!-- 修正标题显示 -->
+            <div class="title">番茄制作2048</div>
             <div class="score-panel">
                 <div class="score-container">
                     <div class="score-label">当前分数</div>
                     <div class="score" id="score">0</div>
                 </div>
-                <div class="best-score-container">
+                <div class="best-score-container" id="best-score-container">
                     <div class="score-label">最高分</div>
                     <div class="best-score" id="best-score">0</div>
                 </div>
@@ -254,6 +412,7 @@
         <div class="btn-group">
             <button class="control-btn" id="new-game-btn">重新开始</button>
             <button class="control-btn" id="sound-toggle">音效：开启</button>
+            <button class="control-btn" id="ranking-btn">排行榜</button>
         </div>
 
         <div class="difficulty-selector">
@@ -262,7 +421,7 @@
             <button class="difficulty-btn" data-level="hard">困难</button>
         </div>
 
-        <div class="tips">方向键 / 滑动控制移动 | 不同难度方块生成概率不同</div>
+        <div class="tips">方向键 / 滑动控制移动 | 相同数字合并得分</div>
 
         <div class="grid-container" id="grid-container">
             <div class="grid-row"><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div></div>
@@ -272,22 +431,45 @@
         </div>
     </div>
 
-    <div class="modal" id="win-modal">
+    <!-- 胜利弹窗 -->
+    <div class="modal win-modal" id="win-modal">
         <div class="modal-content">
-            <div class="modal-title">恭喜！</div>
-            <div class="modal-text">你合成了2048，游戏胜利！</div>
+            <div class="modal-title">🎉 恭喜过关！🎉</div>
+            <div class="modal-text">你合成了2048，创造新纪录：<span id="win-score">0</span>分</div>
             <button class="modal-btn" id="continue-btn">继续挑战</button>
             <button class="modal-btn" id="restart-win-btn">重新开始</button>
         </div>
     </div>
 
+    <!-- 游戏结束弹窗 -->
     <div class="modal" id="game-over-modal">
         <div class="modal-content">
             <div class="modal-title">游戏结束</div>
             <div class="modal-text" id="game-over-text">最终得分：0</div>
             <button class="modal-btn" id="restart-over-btn">重新开始</button>
+            <button class="modal-btn" id="view-ranking-btn">查看排行榜</button>
         </div>
     </div>
+
+    <!-- 排行榜弹窗（分难度） -->
+    <div class="modal ranking-modal" id="ranking-modal">
+        <div class="modal-content">
+            <div class="modal-title">🏆 最高记录排行榜 🏆</div>
+            <div class="ranking-tabs">
+                <button class="ranking-tab active" data-tab="easy">简单</button>
+                <button class="ranking-tab" data-tab="normal">普通</button>
+                <button class="ranking-tab" data-tab="hard">困难</button>
+            </div>
+            <div class="ranking-list" id="ranking-list">
+                <!-- 排行榜内容动态生成 -->
+            </div>
+            <button class="modal-btn" id="close-ranking-btn">关闭</button>
+            <button class="modal-btn clear-ranking-btn" id="clear-ranking-btn">清空当前难度记录</button>
+        </div>
+    </div>
+
+    <!-- 首次点击激活音效提示 -->
+    <div class="sound-tip active" id="sound-tip">点击屏幕激活音效</div>
 
     <script>
         // 核心游戏变量
@@ -298,63 +480,231 @@
         let gameWon = false;
         let soundEnabled = true;
         let difficulty = 'easy';
+        let soundInited = false; // 标记音效是否已激活（解决自动播放限制）
+        let currentRankingTab = 'easy'; // 当前排行榜选中的难度
         
-        // 差异化难度配置（重点完善）
+        // 差异化难度配置
         const difficultyConfig = {
             easy: {
-                tileProb: {2: 0.95, 4: 0.05}, // 95%概率出2，5%出4
-                initialTiles: 2 // 初始生成2个方块
+                tileProb: {2: 0.95, 4: 0.05},
+                initialTiles: 2
             },
             normal: {
-                tileProb: {2: 0.85, 4: 0.15}, // 85%出2，15%出4
-                initialTiles: 2 // 初始生成2个方块
+                tileProb: {2: 0.85, 4: 0.15},
+                initialTiles: 2
             },
             hard: {
-                tileProb: {2: 0.7, 4: 0.25, 8: 0.05}, // 70%出2，25%出4，5%出8
-                initialTiles: 3 // 初始生成3个方块（难度更高）
+                tileProb: {2: 0.7, 4: 0.25, 8: 0.05},
+                initialTiles: 3
             }
         };
 
-        // 音效资源（备用源+主源，确保播放稳定）
+        // 音效资源
         const sounds = {
             move: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-select-click-1109.mp3'),
             merge: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-arcade-mechanical-bling-210.mp3'),
             win: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3'),
             gameOver: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-failure-arcade-alert-notification-240.mp3'),
-            newTile: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-coin-collect-1587.mp3')
+            newTile: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-coin-collect-1587.mp3'),
+            newRecord: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-achievement-bell-600.mp3') // 新纪录音效
         };
 
-        // DOM元素缓存（确保能获取到所有按钮）
+        // DOM元素缓存
         const dom = {
             score: document.getElementById('score'),
             bestScore: document.getElementById('best-score'),
+            bestScoreContainer: document.getElementById('best-score-container'),
             gridContainer: document.getElementById('grid-container'),
             newGameBtn: document.getElementById('new-game-btn'),
             soundToggleBtn: document.getElementById('sound-toggle'),
+            rankingBtn: document.getElementById('ranking-btn'),
             difficultyBtns: document.querySelectorAll('.difficulty-btn'),
             winModal: document.getElementById('win-modal'),
+            winScore: document.getElementById('win-score'),
             gameOverModal: document.getElementById('game-over-modal'),
+            gameOverText: document.getElementById('game-over-text'),
             continueBtn: document.getElementById('continue-btn'),
             restartWinBtn: document.getElementById('restart-win-btn'),
             restartOverBtn: document.getElementById('restart-over-btn'),
-            gameOverText: document.getElementById('game-over-text')
+            viewRankingBtn: document.getElementById('view-ranking-btn'),
+            rankingModal: document.getElementById('ranking-modal'),
+            rankingTabs: document.querySelectorAll('.ranking-tab'),
+            rankingList: document.getElementById('ranking-list'),
+            closeRankingBtn: document.getElementById('close-ranking-btn'),
+            clearRankingBtn: document.getElementById('clear-ranking-btn'),
+            soundTip: document.getElementById('sound-tip')
         };
 
-        // 初始化游戏（核心修复：适配不同难度的初始配置）
+        // ========== 核心完善点1：排行榜分难度 ==========
+        // 1. 获取指定难度的排行榜数据
+        function getRankingList(level = difficulty) {
+            const rankingStr = localStorage.getItem('2048-ranking-list');
+            const allRanking = rankingStr ? JSON.parse(rankingStr) : [];
+            // 筛选对应难度的记录
+            return allRanking.filter(item => item.difficulty === level)
+                             .sort((a, b) => b.score - a.score)
+                             .slice(0, 10);
+        }
+
+        // 2. 保存分数到排行榜（按难度）
+        function saveScoreToRanking(score) {
+            if (score <= 0) return;
+            
+            const scoreRecord = {
+                score: score,
+                date: new Date().toLocaleString('zh-CN'),
+                difficulty: difficulty
+            };
+            
+            let allRanking = localStorage.getItem('2048-ranking-list');
+            allRanking = allRanking ? JSON.parse(allRanking) : [];
+            
+            // 添加新记录
+            allRanking.push(scoreRecord);
+            
+            // 保存所有记录
+            localStorage.setItem('2048-ranking-list', JSON.stringify(allRanking));
+            
+            // 检查是否破纪录
+            checkNewRecord(score);
+            // 更新最高分显示
+            updateBestScore();
+        }
+
+        // ========== 核心完善点2：新纪录特效 ==========
+        // 检查是否打破当前难度的最高分
+        function checkNewRecord(score) {
+            const rankingList = getRankingList(difficulty);
+            if (rankingList.length === 0 || score > rankingList[0].score) {
+                // 触发新纪录特效
+                showNewRecordEffect();
+                // 播放新纪录音效
+                playSound('newRecord');
+            }
+        }
+
+        // 显示新纪录特效
+        function showNewRecordEffect() {
+            // 最高分容器闪烁
+            dom.bestScoreContainer.classList.add('new-record');
+            dom.bestScore.classList.add('new-record');
+            
+            // 创建新纪录提示Toast
+            const toast = document.createElement('div');
+            toast.className = 'record-toast';
+            toast.textContent = '🎉 新纪录！';
+            dom.bestScoreContainer.appendChild(toast);
+            
+            // 3秒后移除特效
+            setTimeout(() => {
+                dom.bestScoreContainer.classList.remove('new-record');
+                dom.bestScore.classList.remove('new-record');
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 3000);
+        }
+
+        // 更新最高分显示（按当前难度）
+        function updateBestScore() {
+            const rankingList = getRankingList(difficulty);
+            bestScore = rankingList.length > 0 ? rankingList[0].score : 0;
+            dom.bestScore.textContent = bestScore;
+        }
+
+        // 渲染指定难度的排行榜
+        function renderRankingList(level = currentRankingTab) {
+            const rankingList = getRankingList(level);
+            dom.rankingList.innerHTML = '';
+            
+            if (rankingList.length === 0) {
+                dom.rankingList.innerHTML = `<div style="padding: 20px; color: #776e65;">暂无${level === 'easy' ? '简单' : level === 'normal' ? '普通' : '困难'}难度记录</div>`;
+                return;
+            }
+            
+            // 生成排行榜项
+            rankingList.forEach((item, index) => {
+                const rankingItem = document.createElement('div');
+                rankingItem.className = 'ranking-item';
+                
+                // 排名图标
+                let rankIcon = index + 1;
+                if (index === 0) rankIcon = '🥇';
+                else if (index === 1) rankIcon = '🥈';
+                else if (index === 2) rankIcon = '🥉';
+                
+                rankingItem.innerHTML = `
+                    <span class="rank-num">${rankIcon}</span>
+                    <span class="rank-desc">
+                        <div>游玩时间：${item.date}</div>
+                    </span>
+                    <span class="rank-score">${item.score}分</span>
+                `;
+                
+                dom.rankingList.appendChild(rankingItem);
+            });
+        }
+
+        // 清空指定难度的排行榜
+        function clearRankingList(level = currentRankingTab) {
+            if (confirm(`确定要清空${level === 'easy' ? '简单' : level === 'normal' ? '普通' : '困难'}难度的所有记录吗？`)) {
+                let allRanking = localStorage.getItem('2048-ranking-list');
+                allRanking = allRanking ? JSON.parse(allRanking) : [];
+                
+                // 过滤掉当前难度的记录
+                allRanking = allRanking.filter(item => item.difficulty !== level);
+                localStorage.setItem('2048-ranking-list', JSON.stringify(allRanking));
+                
+                renderRankingList(level);
+                updateBestScore();
+                playSound('move');
+            }
+        }
+
+        // ========== 核心完善点3：首次点击激活音效 ==========
+        // 初始化音效（解决自动播放限制）
+        function initSound() {
+            if (soundInited) return;
+            
+            // 隐藏提示
+            dom.soundTip.classList.remove('active');
+            
+            // 预加载音效
+            Object.values(sounds).forEach(sound => {
+                sound.load();
+                sound.volume = 0.5;
+            });
+            
+            soundInited = true;
+            playSound('move'); // 播放一次确认音效
+        }
+
+        // 播放音效（兼容处理）
+        function playSound(type) {
+            if (!soundEnabled || !sounds[type] || !soundInited) return;
+            try {
+                const soundClone = sounds[type].cloneNode();
+                soundClone.play().catch(err => console.log('音效播放失败:', err));
+            } catch (e) {
+                console.log('音效初始化失败:', e.message);
+            }
+        }
+
+        // ========== 游戏核心逻辑 ==========
         function init() {
-            // 重置游戏状态
             grid = Array(4).fill().map(() => Array(4).fill(0));
             score = 0;
             gameOver = false;
             gameWon = false;
             
-            // 隐藏弹窗
+            // 隐藏所有弹窗
             dom.winModal.classList.remove('active');
             dom.gameOverModal.classList.remove('active');
+            dom.rankingModal.classList.remove('active');
             
             // 更新分数显示
-            updateScore();
-            loadBestScore();
+            dom.score.textContent = score;
+            updateBestScore();
             
             // 根据难度生成初始方块
             const { initialTiles } = difficultyConfig[difficulty];
@@ -362,38 +712,11 @@
                 addRandomTile();
             }
             
-            // 渲染界面
             render();
-            
-            // 播放初始化音效（反馈操作）
-            playSound('newTile');
+            if (soundInited) playSound('newTile');
         }
 
-        // 加载本地存储的最高分
-        function loadBestScore() {
-            const savedBest = localStorage.getItem('2048-best-score');
-            bestScore = savedBest ? parseInt(savedBest) : 0;
-            dom.bestScore.textContent = bestScore;
-        }
-
-        // 保存最高分
-        function saveBestScore() {
-            if (score > bestScore) {
-                bestScore = score;
-                localStorage.setItem('2048-best-score', bestScore.toString());
-                dom.bestScore.textContent = bestScore;
-            }
-        }
-
-        // 更新分数显示
-        function updateScore() {
-            dom.score.textContent = score;
-            saveBestScore();
-        }
-
-        // 生成随机方块（适配不同难度的概率）
         function addRandomTile() {
-            // 收集空单元格
             const emptyCells = [];
             for (let i = 0; i < 4; i++) {
                 for (let j = 0; j < 4; j++) {
@@ -405,15 +728,11 @@
 
             if (emptyCells.length === 0) return;
 
-            // 随机选择空单元格
             const {i, j} = emptyCells[Math.floor(Math.random() * emptyCells.length)];
-            
-            // 根据当前难度获取方块生成概率
             const { tileProb } = difficultyConfig[difficulty];
             const rand = Math.random();
             let value = 2;
             
-            // 按概率分配方块数值
             let probSum = 0;
             for (const [val, prob] of Object.entries(tileProb)) {
                 probSum += prob;
@@ -426,13 +745,10 @@
             grid[i][j] = value;
         }
 
-        // 渲染游戏界面
         function render() {
-            // 移除现有方块
             const tiles = dom.gridContainer.querySelectorAll('.tile');
             tiles.forEach(tile => tile.remove());
 
-            // 渲染新方块
             for (let i = 0; i < 4; i++) {
                 for (let j = 0; j < 4; j++) {
                     const value = grid[i][j];
@@ -442,14 +758,11 @@
                     const tileClass = value >= 4096 ? 'tile-super' : `tile-${value}`;
                     tile.classList.add('tile', tileClass);
                     tile.textContent = value;
-                    
-                    // 精确计算方块位置
                     tile.style.top = `${i * 97.5 + 10}px`;
                     tile.style.left = `${j * 97.5 + 10}px`;
                     
                     dom.gridContainer.appendChild(tile);
 
-                    // 检查是否合成2048
                     if (value === 2048 && !gameWon) {
                         gameWon = true;
                         showWinModal();
@@ -458,96 +771,76 @@
             }
         }
 
-        // 播放音效（兼容修复）
-        function playSound(type) {
-            if (!soundEnabled || !sounds[type]) return;
-            try {
-                const soundClone = sounds[type].cloneNode();
-                soundClone.volume = 0.5;
-                soundClone.play().catch(err => console.log('音效播放失败:', err));
-            } catch (e) {
-                console.log('音效初始化失败:', e.message);
-            }
-        }
-
-        // 震动反馈（移动端）
+        // 震动反馈
         function vibrate() {
-            if (navigator.vibrate && soundEnabled) {
+            if (navigator.vibrate && soundEnabled && soundInited) {
                 navigator.vibrate(30);
             }
         }
 
-        // 切换音效开关（修复按钮逻辑）
         function toggleSound() {
+            if (!soundInited) {
+                initSound(); // 首次点击先激活音效
+            }
             soundEnabled = !soundEnabled;
             dom.soundToggleBtn.textContent = soundEnabled ? '音效：开启' : '音效：关闭';
-            // 播放反馈音效
             playSound('move');
         }
 
-        // 切换游戏难度（修复按钮逻辑）
         function changeDifficulty(level) {
-            // 更新难度状态
             difficulty = level;
-            // 更新按钮样式
             dom.difficultyBtns.forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.level === level);
             });
-            // 重新初始化游戏
+            // 切换难度后更新最高分
+            updateBestScore();
             init();
-            // 播放反馈音效
-            playSound('move');
+            if (soundInited) playSound('move');
         }
 
-        // 显示胜利弹窗
         function showWinModal() {
-            playSound('win');
+            dom.winScore.textContent = score;
+            if (soundInited) playSound('win');
             dom.winModal.classList.add('active');
+            saveScoreToRanking(score);
         }
 
-        // 显示游戏结束弹窗
         function showGameOverModal() {
             gameOver = true;
-            playSound('gameOver');
+            if (soundInited) playSound('gameOver');
             dom.gameOverText.textContent = `最终得分：${score}`;
             dom.gameOverModal.classList.add('active');
+            saveScoreToRanking(score);
         }
 
-        // 关闭所有弹窗
         function closeModals() {
             dom.winModal.classList.remove('active');
             dom.gameOverModal.classList.remove('active');
+            dom.rankingModal.classList.remove('active');
         }
 
-        // 检查游戏是否结束
         function checkGameOver() {
-            // 检查是否有空单元格
             for (let i = 0; i < 4; i++) {
                 for (let j = 0; j < 4; j++) {
                     if (grid[i][j] === 0) return;
-                    // 检查上下相邻可合并
                     if (i < 3 && grid[i][j] === grid[i+1][j]) return;
-                    // 检查左右相邻可合并
                     if (j < 3 && grid[i][j] === grid[i][j+1]) return;
                 }
             }
-            // 无任何可操作空间，游戏结束
             showGameOverModal();
         }
 
-        // 移动方块核心逻辑
+        // ========== 核心完善点4：游戏结束后禁止操作 ==========
         function move(direction) {
-            if (gameOver) return; // 游戏结束后禁止操作
+            // 游戏结束/胜利后禁止操作
+            if (gameOver || (gameWon && dom.winModal.classList.contains('active'))) return;
 
             let newGrid = JSON.parse(JSON.stringify(grid));
             let moved = false;
             let merged = false;
 
-            // 滑动合并逻辑封装
             function slideAndMerge(arr) {
-                // 过滤空值
                 let newArr = arr.filter(val => val !== 0);
-                // 合并相同数值
                 for (let i = 0; i < newArr.length - 1; i++) {
                     if (newArr[i] === newArr[i+1]) {
                         newArr[i] *= 2;
@@ -557,13 +850,11 @@
                         moved = true;
                     }
                 }
-                // 再次过滤空值并补零
                 newArr = newArr.filter(val => val !== 0);
                 while (newArr.length < 4) newArr.push(0);
                 return newArr;
             }
 
-            // 按方向处理
             switch(direction) {
                 case 'left':
                     for (let i = 0; i < 4; i++) {
@@ -607,26 +898,29 @@
                     break;
             }
 
-            // 有移动则更新网格
             if (moved) {
                 grid = newGrid;
                 addRandomTile();
-                updateScore();
+                dom.score.textContent = score;
                 render();
                 vibrate();
                 playSound(merged ? 'merge' : 'move');
                 
-                // 检查游戏是否结束
                 if (!gameWon) checkGameOver();
             }
         }
 
-        // 绑定所有事件（核心修复：确保按钮事件正确绑定）
+        // 绑定所有事件
         function bindEvents() {
-            // 重新开始按钮
+            // 首次点击激活音效（解决自动播放限制）
+            document.addEventListener('click', initSound, { once: true });
+            document.addEventListener('touchstart', initSound, { once: true });
+
+            // 基础按钮事件
             dom.newGameBtn.addEventListener('click', init);
             dom.restartWinBtn.addEventListener('click', init);
             dom.restartOverBtn.addEventListener('click', init);
+            dom.soundToggleBtn.addEventListener('click', toggleSound);
             
             // 继续挑战按钮
             dom.continueBtn.addEventListener('click', () => {
@@ -635,51 +929,102 @@
                 playSound('move');
             });
             
-            // 音效开关按钮
-            dom.soundToggleBtn.addEventListener('click', toggleSound);
-            
             // 难度选择按钮
             dom.difficultyBtns.forEach(btn => {
                 btn.addEventListener('click', () => {
                     changeDifficulty(btn.dataset.level);
                 });
             });
+
+            // 排行榜相关事件
+            dom.rankingBtn.addEventListener('click', () => {
+                currentRankingTab = difficulty; // 默认打开当前难度的排行榜
+                // 更新排行榜tab选中状态
+                dom.rankingTabs.forEach(tab => {
+                    tab.classList.toggle('active', tab.dataset.tab === currentRankingTab);
+                });
+                renderRankingList(currentRankingTab);
+                dom.rankingModal.classList.add('active');
+                playSound('move');
+            });
             
-            // 键盘控制
+            // 排行榜tab切换
+            dom.rankingTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    currentRankingTab = tab.dataset.tab;
+                    dom.rankingTabs.forEach(t => t.classList.toggle('active', t.dataset.tab === currentRankingTab));
+                    renderRankingList(currentRankingTab);
+                    playSound('move');
+                });
+            });
+            
+            // 游戏结束后查看排行榜
+            dom.viewRankingBtn.addEventListener('click', () => {
+                dom.gameOverModal.classList.remove('active');
+                currentRankingTab = difficulty;
+                dom.rankingTabs.forEach(tab => {
+                    tab.classList.toggle('active', tab.dataset.tab === currentRankingTab);
+                });
+                renderRankingList(currentRankingTab);
+                dom.rankingModal.classList.add('active');
+                playSound('move');
+            });
+            
+            // 关闭排行榜
+            dom.closeRankingBtn.addEventListener('click', () => {
+                dom.rankingModal.classList.remove('active');
+                playSound('move');
+            });
+            
+            // 清空排行榜
+            dom.clearRankingBtn.addEventListener('click', () => {
+                clearRankingList(currentRankingTab);
+            });
+            
+            // 键盘控制（游戏结束后禁止）
             document.addEventListener('keydown', (e) => {
-                // 阻止方向键滚动页面
                 if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
                     e.preventDefault();
                 }
-                if (gameOver) return;
+                if (gameOver || (gameWon && dom.winModal.classList.contains('active'))) return;
                 
                 switch(e.key) {
                     case 'ArrowLeft': move('left'); break;
                     case 'ArrowRight': move('right'); break;
                     case 'ArrowUp': move('up'); break;
                     case 'ArrowDown': move('down'); break;
-                    case 'r': case 'R': init(); break; // 快捷键
+                    case 'r': case 'R': init(); break;
+                    case 'p': case 'P':
+                        currentRankingTab = difficulty;
+                        dom.rankingTabs.forEach(tab => {
+                            tab.classList.toggle('active', tab.dataset.tab === currentRankingTab);
+                        });
+                        renderRankingList(currentRankingTab);
+                        dom.rankingModal.classList.add('active');
+                        break;
                 }
             });
             
-            // 触摸控制（修复滑动穿透）
+            // 触摸控制（游戏结束后禁止）
             let touchStartX = 0, touchStartY = 0;
             document.addEventListener('touchstart', (e) => {
+                if (gameOver || (gameWon && dom.winModal.classList.contains('active'))) return;
                 e.preventDefault();
                 touchStartX = e.touches[0].clientX;
                 touchStartY = e.touches[0].clientY;
             });
             
             document.addEventListener('touchmove', (e) => {
+                if (gameOver || (gameWon && dom.winModal.classList.contains('active'))) return;
                 e.preventDefault();
             });
             
             document.addEventListener('touchend', (e) => {
+                if (gameOver || (gameWon && dom.winModal.classList.contains('active'))) return;
                 e.preventDefault();
                 const dx = e.changedTouches[0].clientX - touchStartX;
                 const dy = e.changedTouches[0].clientY - touchStartY;
                 
-                // 判断滑动方向（阈值30px防误触）
                 if (Math.abs(dx) > Math.abs(dy)) {
                     dx > 30 ? move('right') : (dx < -30 && move('left'));
                 } else {
@@ -690,8 +1035,9 @@
 
         // 页面加载完成后初始化
         window.addEventListener('DOMContentLoaded', () => {
-            bindEvents(); // 先绑定事件
-            init(); // 再初始化游戏
+            bindEvents();
+            init();
+            updateBestScore();
         });
     </script>
 </body>
