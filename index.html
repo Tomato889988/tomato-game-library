@@ -29,8 +29,11 @@
             flex-direction: column;
             align-items: center;
             justify-content: flex-start;
-            padding: env(safe-area-inset-top, 15px) env(safe-area-inset-right, 10px) env(safe-area-inset-bottom, 15px) env(safe-area-inset-left, 10px);
+            /* 修复顶部遮挡：增加安全区上内边距，适配手机状态栏/浏览器导航栏 */
+            padding: env(safe-area-inset-top, 25px) env(safe-area-inset-right, 10px) env(safe-area-inset-bottom, 15px) env(safe-area-inset-left, 10px);
             min-height: 100vh;
+            /* 确保body高度足够，避免内容挤压 */
+            min-height: -webkit-fill-available;
         }
 
         .container {
@@ -40,7 +43,8 @@
             flex-direction: column;
             align-items: center;
             gap: clamp(8px, 2vw, 10px);
-            margin-top: clamp(8px, 2vw, 10px);
+            /* 调整顶部间距，避免标题被遮挡 */
+            margin-top: clamp(10px, 3vw, 15px);
         }
 
         .header {
@@ -57,6 +61,8 @@
             font-weight: bold;
             color: #776e65;
             line-height: 1.2;
+            /* 标题增加内边距，避免被截断 */
+            padding: 5px 0;
         }
 
         .score-panel {
@@ -178,28 +184,45 @@
 
         .tips {
             color: #776e65;
-            font-size: clamp(10px, 2.5vw, 12px);
+            font-size: clamp(11px, 3vw, 13px);
             text-align: center;
-            margin: clamp(4px, 1vw, 5px) 0;
+            margin: clamp(6px, 1.5vw, 8px) 0;
             padding: 0 clamp(5px, 1vw, 8px);
+            /* 优化操作提示：增加高亮和动画 */
+            font-weight: 500;
+            animation: tipsPulse 2s ease infinite alternate;
+            background-color: #f2e8d9;
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+        /* 操作提示呼吸动画 */
+        @keyframes tipsPulse {
+            0% { opacity: 0.7; }
+            100% { opacity: 1; }
         }
 
         .grid-container {
-            width: min(90vw, 400px);
+            /* 优化网格占比：手机端占95%宽度，更饱满 */
+            width: min(95vw, 400px);
             aspect-ratio: 1/1;
             background-color: #bbada0;
             border-radius: clamp(8px, 2vw, 10px);
-            padding: clamp(6px, 1.5vw, 8px);
+            /* 减少内边距，让方块占比更大 */
+            padding: clamp(4px, 1vw, 6px);
             position: relative;
             touch-action: manipulation;
             margin: clamp(8px, 2vw, 10px) 0;
             box-sizing: border-box !important;
+            /* 确保网格容器没有额外边距 */
+            border: none;
+            outline: none;
         }
 
         .grid-row {
             display: flex;
-            margin-bottom: clamp(6px, 1.5vw, 8px);
-            height: calc(25% - (3 * clamp(6px, 1.5vw, 8px)) / 4);
+            /* 减少行间距，优化对齐 */
+            margin-bottom: clamp(4px, 1vw, 6px);
+            height: calc(25% - (3 * clamp(4px, 1vw, 6px)) / 4);
             position: relative;
         }
 
@@ -208,11 +231,12 @@
         }
 
         .grid-cell {
-            width: calc(25% - (3 * clamp(6px, 1.5vw, 8px)) / 4);
+            width: calc(25% - (3 * clamp(4px, 1vw, 6px)) / 4);
             height: 100%;
             background-color: #cdc1b4;
             border-radius: clamp(4px, 1vw, 5px);
-            margin-right: clamp(6px, 1.5vw, 8px);
+            /* 减少列间距，优化对齐 */
+            margin-right: clamp(4px, 1vw, 6px);
         }
 
         .grid-cell:last-child {
@@ -232,6 +256,8 @@
             overflow: hidden;
             white-space: nowrap;
             text-overflow: ellipsis;
+            /* 确保方块没有额外边距，精准对齐 */
+            box-sizing: border-box;
         }
         .tile-merge {
             animation: tileMerge 0.3s ease;
@@ -429,13 +455,20 @@
 
         @supports (padding: max(0px)) {
             body {
-                padding-top: max(env(safe-area-inset-top), 15px);
+                padding-top: max(env(safe-area-inset-top), 25px);
                 padding-bottom: max(env(safe-area-inset-bottom), 15px);
                 padding-left: max(env(safe-area-inset-left), 10px);
                 padding-right: max(env(safe-area-inset-right), 10px);
             }
             .modal {
                 padding: max(env(safe-area-inset-top), 20px) max(env(safe-area-inset-right), 20px) max(env(safe-area-inset-bottom), 20px) max(env(safe-area-inset-left), 20px);
+            }
+        }
+
+        /* 修复iOS高度适配问题 */
+        @media (max-width: 767px) and (orientation: portrait) {
+            html {
+                height: -webkit-fill-available;
             }
         }
     </style>
@@ -562,12 +595,18 @@
             el.addEventListener('click', handler);
         }
 
+        // 修复最高分读取逻辑：确保首次加载就能正确读取本地存储的最高分
         function getRankingList(level = difficulty) {
-            const rankingStr = localStorage.getItem('2048-ranking-list');
-            const allRanking = rankingStr ? JSON.parse(rankingStr) : [];
-            return allRanking.filter(item => item.difficulty === level)
-                             .sort((a, b) => b.score - a.score)
-                             .slice(0, 10);
+            try {
+                const rankingStr = localStorage.getItem('2048-ranking-list');
+                const allRanking = rankingStr ? JSON.parse(rankingStr) : [];
+                return allRanking.filter(item => item.difficulty === level)
+                                 .sort((a, b) => b.score - a.score)
+                                 .slice(0, 10);
+            } catch (e) {
+                console.error('读取排行榜失败:', e);
+                return [];
+            }
         }
 
         function saveScoreToRanking(score) {
@@ -579,13 +618,17 @@
                 difficulty: difficulty
             };
             
-            let allRanking = localStorage.getItem('2048-ranking-list');
-            allRanking = allRanking ? JSON.parse(allRanking) : [];
-            allRanking.push(scoreRecord);
-            
-            localStorage.setItem('2048-ranking-list', JSON.stringify(allRanking));
-            checkNewRecord(score);
-            updateBestScore();
+            try {
+                let allRanking = localStorage.getItem('2048-ranking-list');
+                allRanking = allRanking ? JSON.parse(allRanking) : [];
+                allRanking.push(scoreRecord);
+                
+                localStorage.setItem('2048-ranking-list', JSON.stringify(allRanking));
+                checkNewRecord(score);
+                updateBestScore();
+            } catch (e) {
+                console.error('保存分数失败:', e);
+            }
         }
 
         function checkNewRecord(score) {
@@ -611,10 +654,15 @@
             }, 3000);
         }
 
+        // 优化最高分更新逻辑：确保每次调用都能正确刷新显示
         function updateBestScore() {
             const rankingList = getRankingList(difficulty);
             bestScore = rankingList.length > 0 ? rankingList[0].score : 0;
-            dom.bestScore.textContent = bestScore;
+            // 强制更新DOM，避免缓存导致显示异常
+            dom.bestScore.textContent = '';
+            setTimeout(() => {
+                dom.bestScore.textContent = bestScore;
+            }, 0);
         }
 
         function renderRankingList(level = currentRankingTab) {
@@ -649,13 +697,18 @@
 
         function clearRankingList(level = currentRankingTab) {
             if (confirm(`确定清空${level === 'easy' ? '简单' : level === 'normal' ? '普通' : '困难'}难度记录？`)) {
-                let allRanking = localStorage.getItem('2048-ranking-list');
-                allRanking = allRanking ? JSON.parse(allRanking) : [];
-                allRanking = allRanking.filter(item => item.difficulty !== level);
-                localStorage.setItem('2048-ranking-list', JSON.stringify(allRanking));
-                
-                renderRankingList(level);
-                updateBestScore();
+                try {
+                    let allRanking = localStorage.getItem('2048-ranking-list');
+                    allRanking = allRanking ? JSON.parse(allRanking) : [];
+                    allRanking = allRanking.filter(item => item.difficulty !== level);
+                    localStorage.setItem('2048-ranking-list', JSON.stringify(allRanking));
+                    
+                    renderRankingList(level);
+                    updateBestScore();
+                } catch (e) {
+                    console.error('清空排行榜失败:', e);
+                    alert('清空失败，请重试！');
+                }
             }
         }
 
@@ -669,7 +722,13 @@
             dom.gameOverModal.classList.remove('active');
             dom.rankingModal.classList.remove('active');
             
-            dom.score.textContent = score;
+            // 强制更新当前分数显示
+            dom.score.textContent = '';
+            setTimeout(() => {
+                dom.score.textContent = score;
+            }, 0);
+            
+            // 确保初始化时就更新最高分
             updateBestScore();
             
             const { initialTiles } = difficultyConfig[difficulty];
@@ -709,6 +768,7 @@
             grid[i][j] = value;
         }
 
+        // 优化方块渲染逻辑：精准计算位置，修复对齐问题
         function render() {
             const tiles = dom.gridContainer.querySelectorAll('.tile');
             tiles.forEach(tile => tile.remove());
@@ -722,10 +782,12 @@
             const gap = parseFloat(getComputedStyle(document.querySelector('.grid-cell')).marginRight);
             const cellCount = 4;
             
+            // 精准计算单元格尺寸，避免浮点误差导致的对齐问题
             const cellSize = (gridWidth - 2 * padding - (cellCount - 1) * gap) / cellCount;
-            const preciseCellSize = Math.round(cellSize * 100) / 100;
-            const preciseGap = Math.round(gap * 100) / 100;
-            const precisePadding = Math.round(padding * 100) / 100;
+            // 保留3位小数，减少像素偏差
+            const preciseCellSize = Math.round(cellSize * 1000) / 1000;
+            const preciseGap = Math.round(gap * 1000) / 1000;
+            const precisePadding = Math.round(padding * 1000) / 1000;
 
             for (let i = 0; i < 4; i++) {
                 for (let j = 0; j < 4; j++) {
@@ -737,6 +799,7 @@
                     tile.classList.add('tile', tileClass);
                     tile.textContent = value;
                     
+                    // 精准计算每个方块的位置，确保和网格完全对齐
                     const top = precisePadding + i * (preciseCellSize + preciseGap);
                     const left = precisePadding + j * (preciseCellSize + preciseGap);
                     
@@ -760,6 +823,7 @@
             dom.difficultyBtns.forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.level === level);
             });
+            // 切换难度后立即更新最高分
             updateBestScore();
             init();
         }
@@ -863,7 +927,11 @@
             if (moved) {
                 grid = newGrid;
                 addRandomTile();
-                dom.score.textContent = score;
+                // 强制更新分数显示，避免延迟
+                dom.score.textContent = '';
+                setTimeout(() => {
+                    dom.score.textContent = score;
+                }, 0);
                 render();
                 
                 if (!gameWon) checkGameOver();
@@ -988,14 +1056,18 @@
             };
         }
 
+        // 确保页面完全加载后再初始化，避免DOM未加载完成导致的问题
         window.addEventListener('DOMContentLoaded', () => {
             bindEvents();
+            // 延迟初始化，确保所有DOM元素都已渲染完成
             setTimeout(() => {
-                init();
+                // 初始化前先更新最高分，确保首次显示正确
                 updateBestScore();
-            }, 100);
+                init();
+            }, 200);
         });
 
+        // 修复iOS Safari高度适配问题
         if (/(iPhone|iPad|iPod)/i.test(navigator.userAgent)) {
             window.addEventListener('resize', () => {
                 document.body.style.height = `${window.innerHeight}px`;
@@ -1003,6 +1075,9 @@
                     document.body.style.height = '100%';
                 }, 0);
             }, false);
+            
+            // 初始设置高度
+            document.body.style.height = `${window.innerHeight}px`;
         }
     </script>
 </body>
