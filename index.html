@@ -17,50 +17,49 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-start;
+            justify-content: center;
             min-height: 100vh;
-            padding: 20px 10px;
+            padding: 10px;
         }
 
-        /* 响应式容器 */
         .container {
             width: 100%;
-            max-width: 420px;
+            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
         }
 
         .header {
+            width: 100%;
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-            gap: 10px;
+            align-items: center;
         }
 
         .title {
-            font-size: clamp(36px, 10vw, 48px);
+            font-size: 40px;
             font-weight: bold;
             color: #776e65;
         }
 
-        /* 分数面板优化 */
         .score-panel {
             display: flex;
-            gap: 10px;
+            gap: 8px;
         }
 
         .score-container, .best-score-container {
             background-color: #bbada0;
-            padding: 10px 15px;
+            padding: 8px 12px;
             border-radius: 5px;
             color: white;
             text-align: center;
-            min-width: 80px;
+            min-width: 75px;
         }
 
         .score-label {
             font-size: 12px;
-            font-weight: bold;
             color: #eee4da;
         }
 
@@ -69,34 +68,28 @@
             font-weight: bold;
         }
 
-        /* 按钮组样式 */
         .btn-group {
+            width: 100%;
             display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin-top: 5px;
+            justify-content: center;
+            gap: 10px;
         }
 
         .control-btn {
             background-color: #8f7a66;
             color: white;
             border: none;
-            padding: 8px 15px;
+            padding: 8px 14px;
             border-radius: 5px;
             font-size: 14px;
             font-weight: bold;
             cursor: pointer;
-            transition: background-color 0.2s;
         }
 
-        .control-btn:hover {
-            background-color: #9f8a76;
-        }
-
-        /* 难度选择样式 */
         .difficulty-selector {
-            margin: 10px 0;
+            width: 100%;
             display: flex;
+            justify-content: center;
             gap: 8px;
         }
 
@@ -104,7 +97,6 @@
             padding: 6px 12px;
             border: none;
             border-radius: 4px;
-            cursor: pointer;
             background-color: #bbada0;
             color: white;
             font-weight: bold;
@@ -114,22 +106,25 @@
             background-color: #8f7a66;
         }
 
-        /* 游戏网格响应式 */
+        .tips {
+            color: #776e65;
+            font-size: 13px;
+            text-align: center;
+        }
+
+        /* 游戏面板 —— 强制宽度对齐、居中 */
         .grid-container {
-            width: 100%;
-            max-width: 400px;
-            aspect-ratio: 1/1;
+            width: 400px;
+            height: 400px;
             background-color: #bbada0;
             border-radius: 10px;
-            padding: clamp(8px, 2vw, 10px);
+            padding: 10px;
             position: relative;
-            margin: 0 auto;
         }
 
         .grid-row {
             display: flex;
-            margin-bottom: clamp(8px, 2vw, 10px);
-            height: calc(25% - 7.5px);
+            margin-bottom: 10px;
         }
 
         .grid-row:last-child {
@@ -137,174 +132,78 @@
         }
 
         .grid-cell {
-            width: calc(25% - 7.5px);
-            height: 100%;
+            width: 87.5px;
+            height: 87.5px;
             background-color: #cdc1b4;
             border-radius: 5px;
-            margin-right: clamp(8px, 2vw, 10px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: clamp(24px, 6vw, 36px);
-            font-weight: bold;
-            color: #776e65;
+            margin-right: 10px;
         }
 
         .grid-cell:last-child {
             margin-right: 0;
         }
 
-        /* 方块样式优化 */
         .tile {
             position: absolute;
-            width: calc(25% - 7.5px);
-            aspect-ratio: 1/1;
+            width: 87.5px;
+            height: 87.5px;
             border-radius: 5px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: clamp(24px, 6vw, 36px);
+            font-size: 36px;
             font-weight: bold;
             transition: all 0.15s ease;
             animation: tilePop 0.2s ease;
         }
 
-        /* 方块弹出动画 */
         @keyframes tilePop {
             0% { transform: scale(0.8); opacity: 0; }
             100% { transform: scale(1); opacity: 1; }
         }
 
-        /* 方块颜色优化 */
         .tile-2 { background-color: #eee4da; color: #776e65; }
         .tile-4 { background-color: #ede0c8; color: #776e65; }
         .tile-8 { background-color: #f2b179; color: #f9f6f2; }
         .tile-16 { background-color: #f59563; color: #f9f6f2; }
         .tile-32 { background-color: #f67c5f; color: #f9f6f2; }
         .tile-64 { background-color: #f65e3b; color: #f9f6f2; }
-        .tile-128 { background-color: #edcf72; color: #f9f6f2; box-shadow: 0 0 30px rgba(243, 215, 116, 0.2); }
-        .tile-256 { background-color: #edcc61; color: #f9f6f2; box-shadow: 0 0 30px rgba(243, 215, 116, 0.3); }
-        .tile-512 { background-color: #edc850; color: #f9f6f2; box-shadow: 0 0 30px rgba(243, 215, 116, 0.4); }
-        .tile-1024 { background-color: #edc53f; color: #f9f6f2; box-shadow: 0 0 30px rgba(243, 215, 116, 0.5); font-size: clamp(18px, 4vw, 28px); }
-        .tile-2048 { background-color: #edc22e; color: #f9f6f2; box-shadow: 0 0 30px rgba(243, 215, 116, 0.6); font-size: clamp(18px, 4vw, 28px); }
-        .tile-super { background-color: #3c3a32; color: #f9f6f2; box-shadow: 0 0 30px rgba(0, 0, 0, 0.1); font-size: clamp(16px, 3vw, 24px); }
-
-        /* 提示和弹窗样式 */
-        .tips {
-            color: #776e65;
-            font-size: 14px;
-            margin: 10px 0;
-            text-align: center;
-        }
+        .tile-128 { background-color: #edcf72; color: #f9f6f2; }
+        .tile-256 { background-color: #edcc61; color: #f9f6f2; }
+        .tile-512 { background-color: #edc850; color: #f9f6f2; }
+        .tile-1024 { background-color: #edc53f; color: #f9f6f2; font-size: 28px; }
+        .tile-2048 { background-color: #edc22e; color: #f9f6f2; font-size: 28px; }
+        .tile-super { background-color: #3c3a32; color: #f9f6f2; font-size: 24px; }
 
         .modal {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(238, 228, 218, 0.85);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(238, 228, 218, 0.85);
+            display: flex; align-items: center; justify-content: center;
             z-index: 100;
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.3s;
         }
-
         .modal.active {
             opacity: 1;
             pointer-events: all;
         }
-
         .modal-content {
-            background-color: white;
+            background: white;
             padding: 30px;
             border-radius: 10px;
             text-align: center;
-            max-width: 350px;
-            width: 90%;
         }
-
-        .modal-title {
-            font-size: 28px;
-            color: #776e65;
-            margin-bottom: 15px;
-            font-weight: bold;
-        }
-
-        .modal-text {
-            color: #776e65;
-            margin-bottom: 20px;
-            font-size: 16px;
-        }
-
         .modal-btn {
-            background-color: #8f7a66;
+            background: #8f7a66;
             color: white;
             border: none;
             padding: 10px 20px;
             border-radius: 5px;
-            font-size: 16px;
-            font-weight: bold;
+            margin: 5px;
             cursor: pointer;
-            margin: 0 5px;
-        }
-
-        /* 适配移动端触摸按钮 */
-        .mobile-controls {
-            display: none;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-top: 20px;
-            max-width: 300px;
-            width: 100%;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .mobile-btn {
-            background-color: #8f7a66;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 15px 0;
-            font-size: 24px;
-            cursor: pointer;
-        }
-
-        .mobile-btn:disabled {
-            background-color: #bbada0;
-            cursor: not-allowed;
-        }
-
-        /* 媒体查询 - 移动端适配 */
-        @media (max-width: 480px) {
-            .mobile-controls {
-                display: grid;
-            }
-            
-            .header {
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            .score-panel {
-                order: 1;
-            }
-            
-            .title {
-                order: 0;
-            }
-            
-            .btn-group {
-                order: 2;
-                flex-direction: row;
-                justify-content: center;
-                width: 100%;
-            }
         }
     </style>
 </head>
@@ -312,7 +211,6 @@
     <div class="container">
         <div class="header">
             <div class="title">2048</div>
-            
             <div class="score-panel">
                 <div class="score-container">
                     <div class="score-label">当前分数</div>
@@ -323,11 +221,11 @@
                     <div class="best-score" id="best-score">0</div>
                 </div>
             </div>
+        </div>
 
-            <div class="btn-group">
-                <button class="control-btn" id="new-game-btn">重新开始</button>
-                <button class="control-btn" id="sound-toggle">音效：开启</button>
-            </div>
+        <div class="btn-group">
+            <button class="control-btn" id="new-game-btn">重新开始</button>
+            <button class="control-btn" id="sound-toggle">音效：开启</button>
         </div>
 
         <div class="difficulty-selector">
@@ -336,52 +234,16 @@
             <button class="difficulty-btn" data-level="hard">困难</button>
         </div>
 
-        <div class="tips">
-            操作提示：方向键/触摸滑动控制方块移动 | 相同数字合并得分
-        </div>
+        <div class="tips">方向键 / 滑动控制移动</div>
 
         <div class="grid-container" id="grid-container">
-            <div class="grid-row">
-                <div class="grid-cell"></div>
-                <div class="grid-cell"></div>
-                <div class="grid-cell"></div>
-                <div class="grid-cell"></div>
-            </div>
-            <div class="grid-row">
-                <div class="grid-cell"></div>
-                <div class="grid-cell"></div>
-                <div class="grid-cell"></div>
-                <div class="grid-cell"></div>
-            </div>
-            <div class="grid-row">
-                <div class="grid-cell"></div>
-                <div class="grid-cell"></div>
-                <div class="grid-cell"></div>
-                <div class="grid-cell"></div>
-            </div>
-            <div class="grid-row">
-                <div class="grid-cell"></div>
-                <div class="grid-cell"></div>
-                <div class="grid-cell"></div>
-                <div class="grid-cell"></div>
-            </div>
-        </div>
-
-        <!-- 移动端触摸按钮 -->
-        <div class="mobile-controls">
-            <button class="mobile-btn" disabled></button>
-            <button class="mobile-btn" id="mobile-up">↑</button>
-            <button class="mobile-btn" disabled></button>
-            <button class="mobile-btn" id="mobile-left">←</button>
-            <button class="mobile-btn" disabled></button>
-            <button class="mobile-btn" id="mobile-right">→</button>
-            <button class="mobile-btn" disabled></button>
-            <button class="mobile-btn" id="mobile-down">↓</button>
-            <button class="mobile-btn" disabled></button>
+            <div class="grid-row"><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div></div>
+            <div class="grid-row"><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div></div>
+            <div class="grid-row"><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div></div>
+            <div class="grid-row"><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div></div>
         </div>
     </div>
 
-    <!-- 胜利弹窗 -->
     <div class="modal" id="win-modal">
         <div class="modal-content">
             <div class="modal-title">恭喜！</div>
@@ -391,31 +253,28 @@
         </div>
     </div>
 
-    <!-- 游戏结束弹窗 -->
     <div class="modal" id="game-over-modal">
         <div class="modal-content">
             <div class="modal-title">游戏结束</div>
-            <div class="modal-text" id="game-over-text">你的最终得分：0</div>
+            <div class="modal-text" id="game-over-text">最终得分：0</div>
             <button class="modal-btn" id="restart-over-btn">重新开始</button>
         </div>
     </div>
 
     <script>
-        // 核心游戏变量
         let grid = [];
         let score = 0;
         let bestScore = 0;
         let gameOver = false;
         let gameWon = false;
         let soundEnabled = true;
-        let difficulty = 'easy'; // 难度：easy/normal/hard
-        let tileSpawnProbability = { // 不同难度下方块生成概率
-            easy: { 2: 0.95, 4: 0.05 },
-            normal: { 2: 0.9, 4: 0.1 },
-            hard: { 2: 0.85, 4: 0.15 }
+        let difficulty = 'easy';
+        let tileSpawnProbability = {
+            easy: {2:0.95,4:0.05},
+            normal: {2:0.9,4:0.1},
+            hard: {2:0.85,4:0.15}
         };
 
-        // 音效对象（使用免费公共资源）
         const sounds = {
             move: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-select-click-1109.mp3'),
             merge: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-arcade-mechanical-bling-210.mp3'),
@@ -424,407 +283,198 @@
             newTile: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-coin-collect-1587.mp3')
         };
 
-        // DOM 元素
         const scoreElement = document.getElementById('score');
         const bestScoreElement = document.getElementById('best-score');
         const gridContainer = document.getElementById('grid-container');
-        const soundToggleBtn = document.getElementById('sound-toggle');
-        const newGameBtn = document.getElementById('new-game-btn');
-        const winModal = document.getElementById('win-modal');
-        const gameOverModal = document.getElementById('game-over-modal');
-        const continueBtn = document.getElementById('continue-btn');
-        const restartWinBtn = document.getElementById('restart-win-btn');
-        const restartOverBtn = document.getElementById('restart-over-btn');
-        const gameOverText = document.getElementById('game-over-text');
-        const difficultyBtns = document.querySelectorAll('.difficulty-btn');
-        // 移动端按钮
-        const mobileUp = document.getElementById('mobile-up');
-        const mobileDown = document.getElementById('mobile-down');
-        const mobileLeft = document.getElementById('mobile-left');
-        const mobileRight = document.getElementById('mobile-right');
 
-        // 初始化函数
-        function init() {
-            // 重置游戏状态
-            grid = Array(4).fill().map(() => Array(4).fill(0));
+        function init(){
+            grid = [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]];
             score = 0;
             gameOver = false;
             gameWon = false;
-            
-            // 隐藏弹窗
-            winModal.classList.remove('active');
-            gameOverModal.classList.remove('active');
-            
-            // 更新分数显示
             updateScore();
             loadBestScore();
-            
-            // 生成初始方块
             addRandomTile();
             addRandomTile();
-            
-            // 渲染界面
             render();
+            closeModals();
         }
 
-        // 加载最高分（本地存储）
-        function loadBestScore() {
-            const savedBest = localStorage.getItem('2048-best-score');
-            bestScore = savedBest ? parseInt(savedBest) : 0;
+        function loadBestScore(){
+            bestScore = +localStorage.getItem('2048-best')||0;
             bestScoreElement.textContent = bestScore;
         }
 
-        // 保存最高分
-        function saveBestScore() {
-            if (score > bestScore) {
-                bestScore = score;
-                localStorage.setItem('2048-best-score', bestScore.toString());
-                bestScoreElement.textContent = bestScore;
+        function saveBestScore(){
+            if(score>bestScore){
+                bestScore=score;
+                localStorage.setItem('2048-best',bestScore);
+                bestScoreElement.textContent=bestScore;
             }
         }
 
-        // 添加随机方块
-        function addRandomTile() {
-            const emptyCells = [];
-            // 收集空单元格
-            for (let i = 0; i < 4; i++) {
-                for (let j = 0; j < 4; j++) {
-                    if (grid[i][j] === 0) {
-                        emptyCells.push({i, j});
-                    }
-                }
-            }
-
-            if (emptyCells.length === 0) return;
-
-            // 随机选择空单元格
-            const {i, j} = emptyCells[Math.floor(Math.random() * emptyCells.length)];
-            
-            // 根据难度生成不同概率的方块
-            const prob = Math.random();
-            const probabilities = tileSpawnProbability[difficulty];
-            if (prob < probabilities[2]) {
-                grid[i][j] = 2;
-            } else {
-                grid[i][j] = 4;
-            }
-            
-            // 播放新方块音效
-            playSound('newTile');
+        function addRandomTile(){
+            let empty=[];
+            for(let i=0;i<4;i++)for(let j=0;j<4;j++)if(grid[i][j]==0)empty.push([i,j]);
+            if(empty.length==0)return;
+            let [i,j] = empty[Math.random()*empty.length|0];
+            grid[i][j] = Math.random() < tileSpawnProbability[difficulty][2] ? 2 : 4;
         }
 
-        // 渲染游戏界面
-        function render() {
-            // 移除现有方块
-            const tiles = gridContainer.querySelectorAll('.tile');
-            tiles.forEach(tile => tile.remove());
-
-            // 渲染方块
-            for (let i = 0; i < 4; i++) {
-                for (let j = 0; j < 4; j++) {
-                    if (grid[i][j] !== 0) {
-                        const tile = document.createElement('div');
-                        // 根据数值添加样式类
-                        const tileClass = grid[i][j] >= 4096 ? 'tile-super' : `tile-${grid[i][j]}`;
-                        tile.classList.add('tile', tileClass);
-                        tile.textContent = grid[i][j];
-                        
-                        // 计算方块位置（响应式）
-                        const gap = getComputedStyle(gridContainer).paddingLeft;
-                        const tileGap = parseFloat(gap) + 2; // 单元格间距
-                        tile.style.top = `${i * (25 + tileGap/4)}%`;
-                        tile.style.left = `${j * (25 + tileGap/4)}%`;
-                        
-                        gridContainer.appendChild(tile);
-
-                        // 检查是否合成2048
-                        if (grid[i][j] === 2048 && !gameWon) {
-                            gameWon = true;
-                            showWinModal();
-                        }
-                    }
+        function render(){
+            gridContainer.querySelectorAll('.tile').forEach(t=>t.remove());
+            for(let i=0;i<4;i++){
+                for(let j=0;j<4;j++){
+                    let v=grid[i][j];
+                    if(v===0)continue;
+                    let t=document.createElement('div');
+                    t.classList.add('tile',v>=4096?'tile-super':`tile-${v}`);
+                    t.textContent=v;
+                    t.style.top = i*97.5 +10+'px';
+                    t.style.left= j*97.5 +10+'px';
+                    gridContainer.appendChild(t);
+                    if(v===2048&&!gameWon){gameWon=true;showWin();}
                 }
             }
         }
 
-        // 更新分数显示
-        function updateScore() {
-            scoreElement.textContent = score;
+        function updateScore(){
+            scoreElement.textContent=score;
             saveBestScore();
         }
 
-        // 播放音效
-        function playSound(type) {
-            if (soundEnabled && sounds[type]) {
-                try {
-                    sounds[type].currentTime = 0; // 重置播放位置
-                    sounds[type].play();
-                } catch (e) {
-                    console.log('音效播放失败:', e);
+        function vibrate(){
+            navigator.vibrate&&navigator.vibrate(30);
+        }
+
+        function playSound(k){
+            if(!soundEnabled||!sounds[k])return;
+            sounds[k].currentTime=0;
+            sounds[k].play().catch(()=>{});
+        }
+
+        function move(dir){
+            if(gameOver||gameWon)return;
+            let g=JSON.parse(JSON.stringify(grid));
+            let moved=0,merged=0;
+
+            function slide(arr){
+                let a=arr.filter(x=>x);
+                for(let i=0;i<a.length-1;i++){
+                    if(a[i]==a[i+1]){
+                        a[i]*=2; score+=a[i]; a[i+1]=0; merged++;
+                    }
+                }
+                a=a.filter(x=>x);
+                while(a.length<4)a.push(0);
+                return a;
+            }
+
+            if(dir=='left'){
+                for(let i=0;i<4;i++){
+                    let r=slide(g[i]);
+                    if(r+''!==g[i]+'')moved=1;
+                    g[i]=r;
                 }
             }
-        }
-
-        // 震动效果（仅移动端）
-        function vibrate() {
-            if (navigator.vibrate && soundEnabled) {
-                navigator.vibrate(40); // 震动40毫秒
-            }
-        }
-
-        // 切换音效开关
-        function toggleSound() {
-            soundEnabled = !soundEnabled;
-            soundToggleBtn.textContent = soundEnabled ? '音效：开启' : '音效：关闭';
-        }
-
-        // 切换难度
-        function changeDifficulty(level) {
-            difficulty = level;
-            // 更新按钮样式
-            difficultyBtns.forEach(btn => {
-                if (btn.dataset.level === level) {
-                    btn.classList.add('active');
-                } else {
-                    btn.classList.remove('active');
+            if(dir=='right'){
+                for(let i=0;i<4;i++){
+                    let r=slide([...g[i]].reverse()).reverse();
+                    if(r+''!==g[i]+'')moved=1;
+                    g[i]=r;
                 }
-            });
-            // 重新开始游戏
-            init();
-        }
-
-        // 显示胜利弹窗
-        function showWinModal() {
-            playSound('win');
-            winModal.classList.add('active');
-        }
-
-        // 显示游戏结束弹窗
-        function showGameOverModal() {
-            gameOver = true;
-            playSound('gameOver');
-            gameOverText.textContent = `你的最终得分：${score}`;
-            gameOverModal.classList.add('active');
-        }
-
-        // 移动逻辑（核心）
-        function move(direction) {
-            if (gameOver || (gameWon && !document.querySelector('.modal.active'))) return;
-
-            let moved = false;
-            let merged = false;
-            let newGrid = JSON.parse(JSON.stringify(grid));
-
-            // 向左移动
-            if (direction === 'left') {
-                for (let i = 0; i < 4; i++) {
-                    let row = newGrid[i].filter(val => val !== 0);
-                    // 合并相同数字
-                    for (let j = 0; j < row.length - 1; j++) {
-                        if (row[j] === row[j + 1]) {
-                            row[j] *= 2;
-                            score += row[j];
-                            row[j + 1] = 0;
-                            merged = true;
-                            moved = true;
-                        }
-                    }
-                    // 过滤空值并补零
-                    row = row.filter(val => val !== 0);
-                    while (row.length < 4) row.push(0);
-                    
-                    if (JSON.stringify(newGrid[i]) !== JSON.stringify(row)) {
-                        moved = true;
-                        newGrid[i] = row;
-                    }
+            }
+            if(dir=='up'){
+                for(let j=0;j<4;j++){
+                    let c=slide([g[0][j],g[1][j],g[2][j],g[3][j]]);
+                    for(let i=0;i<4;i++){if(g[i][j]!==c[i])moved=1;g[i][j]=c[i];}
+                }
+            }
+            if(dir=='down'){
+                for(let j=0;j<4;j++){
+                    let c=slide([g[0][j],g[1][j],g[2][j],g[3][j]].reverse()).reverse();
+                    for(let i=0;i<4;i++){if(g[i][j]!==c[i])moved=1;g[i][j]=c[i];}
                 }
             }
 
-            // 向右移动
-            else if (direction === 'right') {
-                for (let i = 0; i < 4; i++) {
-                    let row = newGrid[i].filter(val => val !== 0).reverse();
-                    // 合并相同数字
-                    for (let j = 0; j < row.length - 1; j++) {
-                        if (row[j] === row[j + 1]) {
-                            row[j] *= 2;
-                            score += row[j];
-                            row[j + 1] = 0;
-                            merged = true;
-                            moved = true;
-                        }
-                    }
-                    // 过滤空值、反转并补零
-                    row = row.filter(val => val !== 0).reverse();
-                    while (row.length < 4) row.unshift(0);
-                    
-                    if (JSON.stringify(newGrid[i]) !== JSON.stringify(row)) {
-                        moved = true;
-                        newGrid[i] = row;
-                    }
-                }
-            }
-
-            // 向上移动
-            else if (direction === 'up') {
-                for (let j = 0; j < 4; j++) {
-                    let col = newGrid.map(row => row[j]).filter(val => val !== 0);
-                    // 合并相同数字
-                    for (let i = 0; i < col.length - 1; i++) {
-                        if (col[i] === col[i + 1]) {
-                            col[i] *= 2;
-                            score += col[i];
-                            col[i + 1] = 0;
-                            merged = true;
-                            moved = true;
-                        }
-                    }
-                    // 过滤空值并补零
-                    col = col.filter(val => val !== 0);
-                    while (col.length < 4) col.push(0);
-                    
-                    // 更新列数据
-                    for (let i = 0; i < 4; i++) {
-                        if (newGrid[i][j] !== col[i]) {
-                            moved = true;
-                            newGrid[i][j] = col[i];
-                        }
-                    }
-                }
-            }
-
-            // 向下移动
-            else if (direction === 'down') {
-                for (let j = 0; j < 4; j++) {
-                    let col = newGrid.map(row => row[j]).filter(val => val !== 0).reverse();
-                    // 合并相同数字
-                    for (let i = 0; i < col.length - 1; i++) {
-                        if (col[i] === col[i + 1]) {
-                            col[i] *= 2;
-                            score += col[i];
-                            col[i + 1] = 0;
-                            merged = true;
-                            moved = true;
-                        }
-                    }
-                    // 过滤空值、反转并补零
-                    col = col.filter(val => val !== 0).reverse();
-                    while (col.length < 4) col.unshift(0);
-                    
-                    // 更新列数据
-                    for (let i = 0; i < 4; i++) {
-                        if (newGrid[i][j] !== col[i]) {
-                            moved = true;
-                            newGrid[i][j] = col[i];
-                        }
-                    }
-                }
-            }
-
-            // 如果有移动，更新网格并生成新方块
-            if (moved) {
-                grid = newGrid;
+            if(moved){
+                grid=g;
                 addRandomTile();
                 updateScore();
                 render();
-                
-                // 播放音效和震动
                 vibrate();
-                playSound(merged ? 'merge' : 'move');
-                
-                // 检查游戏是否结束
-                if (!gameWon) checkGameOver();
+                playSound(merged?'merge':'move');
+                checkGameOver();
             }
         }
 
-        // 检查游戏是否结束
-        function checkGameOver() {
-            // 检查是否有空单元格
-            for (let i = 0; i < 4; i++) {
-                for (let j = 0; j < 4; j++) {
-                    if (grid[i][j] === 0) return;
-                    // 检查上下相邻是否可合并
-                    if (i < 3 && grid[i][j] === grid[i + 1][j]) return;
-                    // 检查左右相邻是否可合并
-                    if (j < 3 && grid[i][j] === grid[i][j + 1]) return;
-                }
+        function checkGameOver(){
+            for(let i=0;i<4;i++)for(let j=0;j<4;j++){
+                if(grid[i][j]==0)return;
+                if(i<3&&grid[i][j]==grid[i+1][j])return;
+                if(j<3&&grid[i][j]==grid[i][j+1])return;
             }
-            // 游戏结束
-            showGameOverModal();
+            gameOver=true;
+            showGameOver();
         }
 
-        // 事件监听
-        // 重新开始游戏
-        newGameBtn.addEventListener('click', init);
-        restartWinBtn.addEventListener('click', init);
-        restartOverBtn.addEventListener('click', init);
-        
-        // 继续游戏（胜利后）
-        continueBtn.addEventListener('click', () => {
-            winModal.classList.remove('active');
-            gameWon = false; // 重置胜利状态，继续挑战更高分数
-        });
+        function closeModals(){
+            document.getElementById('win-modal').classList.remove('active');
+            document.getElementById('game-over-modal').classList.remove('active');
+        }
+        function showWin(){
+            playSound('win');
+            document.getElementById('win-modal').classList.add('active');
+        }
+        function showGameOver(){
+            playSound('gameOver');
+            document.getElementById('game-over-text').textContent='最终得分：'+score;
+            document.getElementById('game-over-modal').classList.add('active');
+        }
 
-        // 音效开关
-        soundToggleBtn.addEventListener('click', toggleSound);
+        document.getElementById('new-game-btn').onclick=init;
+        document.getElementById('restart-over-btn').onclick=init;
+        document.getElementById('restart-win-btn').onclick=init;
+        document.getElementById('continue-btn').onclick=()=>{closeModals();gameWon=false;};
 
-        // 难度选择
-        difficultyBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                changeDifficulty(btn.dataset.level);
-            });
-        });
+        document.getElementById('sound-toggle').onclick=()=>{
+            soundEnabled=!soundEnabled;
+            document.getElementById('sound-toggle').textContent=soundEnabled?'音效：开启':'音效：关闭';
+        };
 
-        // 键盘控制
-        document.addEventListener('keydown', (e) => {
-            // 阻止方向键滚动页面
-            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
-                e.preventDefault();
-            }
-            
-            switch(e.key) {
-                case 'ArrowLeft': move('left'); break;
-                case 'ArrowRight': move('right'); break;
-                case 'ArrowUp': move('up'); break;
-                case 'ArrowDown': move('down'); break;
-                case 'r': case 'R': init(); break; // 快捷键R重新开始
+        document.querySelectorAll('.difficulty-btn').forEach(b=>{
+            b.onclick=()=>{
+                document.querySelectorAll('.difficulty-btn').forEach(x=>x.classList.remove('active'));
+                b.classList.add('active');
+                difficulty=b.dataset.level;
+                init();
             }
         });
 
-        // 触摸控制（移动端）
-        let touchStartX = 0;
-        let touchStartY = 0;
-        document.addEventListener('touchstart', (e) => {
-            touchStartX = e.touches[0].clientX;
-            touchStartY = e.touches[0].clientY;
-        });
-
-        document.addEventListener('touchend', (e) => {
-            const touchEndX = e.changedTouches[0].clientX;
-            const touchEndY = e.changedTouches[0].clientY;
-            const dx = touchEndX - touchStartX;
-            const dy = touchEndY - touchStartY;
-
-            // 判断滑动方向（阈值30px，避免误触）
-            if (Math.abs(dx) > Math.abs(dy)) {
-                if (Math.abs(dx) > 30) {
-                    move(dx > 0 ? 'right' : 'left');
-                }
-            } else {
-                if (Math.abs(dy) > 30) {
-                    move(dy > 0 ? 'down' : 'up');
-                }
+        document.addEventListener('keydown',e=>{
+            if(gameOver)return;
+            switch(e.key){
+                case'ArrowLeft':move('left');break;
+                case'ArrowRight':move('right');break;
+                case'ArrowUp':move('up');break;
+                case'ArrowDown':move('down');break;
+                case'r':case'R':init();break;
             }
         });
 
-        // 移动端触摸按钮控制
-        mobileUp.addEventListener('click', () => move('up'));
-        mobileDown.addEventListener('click', () => move('down'));
-        mobileLeft.addEventListener('click', () => move('left'));
-        mobileRight.addEventListener('click', () => move('right'));
+        let sx=0,sy=0;
+        document.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY;});
+        document.addEventListener('touchend',e=>{
+            let dx=e.changedTouches[0].clientX-sx;
+            let dy=e.changedTouches[0].clientY-sy;
+            if(Math.abs(dx)>Math.abs(dy)){
+                if(dx>30)move('right');else if(dx<-30)move('left');
+            }else{
+                if(dy>30)move('down');else if(dy<-30)move('up');
+            }
+        });
 
-        // 初始化游戏
-        window.addEventListener('load', init);
+        init();
     </script>
 </body>
 </html>
