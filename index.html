@@ -2,7 +2,6 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <!-- 核心修复：禁止页面缩放 + 锁定视口，防止滑动跑偏 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>番茄制作2048 游戏 - 完整版</title>
     <style>
@@ -21,9 +20,8 @@
             justify-content: center;
             min-height: 100vh;
             padding: 10px;
-            /* 核心修复：禁止页面滚动 */
             overflow: hidden;
-            touch-action: none; /* 禁用浏览器默认触摸行为 */
+            touch-action: none;
         }
 
         .container {
@@ -88,6 +86,11 @@
             font-size: 14px;
             font-weight: bold;
             cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .control-btn:hover {
+            background-color: #9f8a76;
         }
 
         .difficulty-selector {
@@ -104,10 +107,16 @@
             background-color: #bbada0;
             color: white;
             font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
         }
 
         .difficulty-btn.active {
             background-color: #8f7a66;
+        }
+
+        .difficulty-btn:hover:not(.active) {
+            background-color: #c9b9a8;
         }
 
         .tips {
@@ -123,7 +132,6 @@
             border-radius: 10px;
             padding: 10px;
             position: relative;
-            /* 核心修复：防止滑动穿透 */
             touch-action: manipulation;
         }
 
@@ -201,6 +209,17 @@
             border-radius: 10px;
             text-align: center;
         }
+        .modal-title {
+            font-size: 28px;
+            color: #776e65;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        .modal-text {
+            color: #776e65;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
         .modal-btn {
             background: #8f7a66;
             color: white;
@@ -209,13 +228,17 @@
             border-radius: 5px;
             margin: 5px;
             cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .modal-btn:hover {
+            background-color: #9f8a76;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <div class="title">2048</div>
+            <div class="title">番茄制作2048</div> <!-- 修正标题显示 -->
             <div class="score-panel">
                 <div class="score-container">
                     <div class="score-label">当前分数</div>
@@ -239,7 +262,7 @@
             <button class="difficulty-btn" data-level="hard">困难</button>
         </div>
 
-        <div class="tips">方向键 / 滑动控制移动</div>
+        <div class="tips">方向键 / 滑动控制移动 | 不同难度方块生成概率不同</div>
 
         <div class="grid-container" id="grid-container">
             <div class="grid-row"><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div></div>
@@ -267,6 +290,7 @@
     </div>
 
     <script>
+        // 核心游戏变量
         let grid = [];
         let score = 0;
         let bestScore = 0;
@@ -274,13 +298,24 @@
         let gameWon = false;
         let soundEnabled = true;
         let difficulty = 'easy';
-        let tileSpawnProbability = {
-            easy: {2:0.95,4:0.05},
-            normal: {2:0.9,4:0.1},
-            hard: {2:0.85,4:0.15}
+        
+        // 差异化难度配置（重点完善）
+        const difficultyConfig = {
+            easy: {
+                tileProb: {2: 0.95, 4: 0.05}, // 95%概率出2，5%出4
+                initialTiles: 2 // 初始生成2个方块
+            },
+            normal: {
+                tileProb: {2: 0.85, 4: 0.15}, // 85%出2，15%出4
+                initialTiles: 2 // 初始生成2个方块
+            },
+            hard: {
+                tileProb: {2: 0.7, 4: 0.25, 8: 0.05}, // 70%出2，25%出4，5%出8
+                initialTiles: 3 // 初始生成3个方块（难度更高）
+            }
         };
 
-        // 修复音效：替换为更稳定的公共音效源
+        // 音效资源（备用源+主源，确保播放稳定）
         const sounds = {
             move: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-select-click-1109.mp3'),
             merge: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-arcade-mechanical-bling-210.mp3'),
@@ -289,222 +324,375 @@
             newTile: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-coin-collect-1587.mp3')
         };
 
-        // 修复音效播放：添加兼容处理
-        function playSound(type) {
-            if (!soundEnabled || !sounds[type]) return;
-            try {
-                // 克隆音频对象避免播放冲突
-                const soundClone = sounds[type].cloneNode();
-                soundClone.volume = 0.5; // 降低音量避免刺耳
-                soundClone.play();
-            } catch (e) {
-                console.log("音效播放提示：", e.message);
-            }
-        }
+        // DOM元素缓存（确保能获取到所有按钮）
+        const dom = {
+            score: document.getElementById('score'),
+            bestScore: document.getElementById('best-score'),
+            gridContainer: document.getElementById('grid-container'),
+            newGameBtn: document.getElementById('new-game-btn'),
+            soundToggleBtn: document.getElementById('sound-toggle'),
+            difficultyBtns: document.querySelectorAll('.difficulty-btn'),
+            winModal: document.getElementById('win-modal'),
+            gameOverModal: document.getElementById('game-over-modal'),
+            continueBtn: document.getElementById('continue-btn'),
+            restartWinBtn: document.getElementById('restart-win-btn'),
+            restartOverBtn: document.getElementById('restart-over-btn'),
+            gameOverText: document.getElementById('game-over-text')
+        };
 
-        const scoreElement = document.getElementById('score');
-        const bestScoreElement = document.getElementById('best-score');
-        const gridContainer = document.getElementById('grid-container');
-
-        function init(){
-            grid = [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]];
+        // 初始化游戏（核心修复：适配不同难度的初始配置）
+        function init() {
+            // 重置游戏状态
+            grid = Array(4).fill().map(() => Array(4).fill(0));
             score = 0;
             gameOver = false;
             gameWon = false;
+            
+            // 隐藏弹窗
+            dom.winModal.classList.remove('active');
+            dom.gameOverModal.classList.remove('active');
+            
+            // 更新分数显示
             updateScore();
             loadBestScore();
-            addRandomTile();
-            addRandomTile();
+            
+            // 根据难度生成初始方块
+            const { initialTiles } = difficultyConfig[difficulty];
+            for (let i = 0; i < initialTiles; i++) {
+                addRandomTile();
+            }
+            
+            // 渲染界面
             render();
-            closeModals();
+            
+            // 播放初始化音效（反馈操作）
+            playSound('newTile');
         }
 
-        function loadBestScore(){
-            bestScore = +localStorage.getItem('2048-best')||0;
-            bestScoreElement.textContent = bestScore;
+        // 加载本地存储的最高分
+        function loadBestScore() {
+            const savedBest = localStorage.getItem('2048-best-score');
+            bestScore = savedBest ? parseInt(savedBest) : 0;
+            dom.bestScore.textContent = bestScore;
         }
 
-        function saveBestScore(){
-            if(score>bestScore){
-                bestScore=score;
-                localStorage.setItem('2048-best',bestScore);
-                bestScoreElement.textContent=bestScore;
+        // 保存最高分
+        function saveBestScore() {
+            if (score > bestScore) {
+                bestScore = score;
+                localStorage.setItem('2048-best-score', bestScore.toString());
+                dom.bestScore.textContent = bestScore;
             }
         }
 
-        function addRandomTile(){
-            let empty=[];
-            for(let i=0;i<4;i++)for(let j=0;j<4;j++)if(grid[i][j]==0)empty.push([i,j]);
-            if(empty.length==0)return;
-            let [i,j] = empty[Math.random()*empty.length|0];
-            grid[i][j] = Math.random() < tileSpawnProbability[difficulty][2] ? 2 : 4;
-            playSound('newTile'); // 修复：添加新方块音效
+        // 更新分数显示
+        function updateScore() {
+            dom.score.textContent = score;
+            saveBestScore();
         }
 
-        function render(){
-            gridContainer.querySelectorAll('.tile').forEach(t=>t.remove());
-            for(let i=0;i<4;i++){
-                for(let j=0;j<4;j++){
-                    let v=grid[i][j];
-                    if(v===0)continue;
-                    let t=document.createElement('div');
-                    t.classList.add('tile',v>=4096?'tile-super':`tile-${v}`);
-                    t.textContent=v;
-                    t.style.top = i*97.5 +10+'px';
-                    t.style.left= j*97.5 +10+'px';
-                    gridContainer.appendChild(t);
-                    if(v===2048&&!gameWon){gameWon=true;showWin();}
+        // 生成随机方块（适配不同难度的概率）
+        function addRandomTile() {
+            // 收集空单元格
+            const emptyCells = [];
+            for (let i = 0; i < 4; i++) {
+                for (let j = 0; j < 4; j++) {
+                    if (grid[i][j] === 0) {
+                        emptyCells.push({i, j});
+                    }
+                }
+            }
+
+            if (emptyCells.length === 0) return;
+
+            // 随机选择空单元格
+            const {i, j} = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+            
+            // 根据当前难度获取方块生成概率
+            const { tileProb } = difficultyConfig[difficulty];
+            const rand = Math.random();
+            let value = 2;
+            
+            // 按概率分配方块数值
+            let probSum = 0;
+            for (const [val, prob] of Object.entries(tileProb)) {
+                probSum += prob;
+                if (rand <= probSum) {
+                    value = parseInt(val);
+                    break;
+                }
+            }
+            
+            grid[i][j] = value;
+        }
+
+        // 渲染游戏界面
+        function render() {
+            // 移除现有方块
+            const tiles = dom.gridContainer.querySelectorAll('.tile');
+            tiles.forEach(tile => tile.remove());
+
+            // 渲染新方块
+            for (let i = 0; i < 4; i++) {
+                for (let j = 0; j < 4; j++) {
+                    const value = grid[i][j];
+                    if (value === 0) continue;
+
+                    const tile = document.createElement('div');
+                    const tileClass = value >= 4096 ? 'tile-super' : `tile-${value}`;
+                    tile.classList.add('tile', tileClass);
+                    tile.textContent = value;
+                    
+                    // 精确计算方块位置
+                    tile.style.top = `${i * 97.5 + 10}px`;
+                    tile.style.left = `${j * 97.5 + 10}px`;
+                    
+                    dom.gridContainer.appendChild(tile);
+
+                    // 检查是否合成2048
+                    if (value === 2048 && !gameWon) {
+                        gameWon = true;
+                        showWinModal();
+                    }
                 }
             }
         }
 
-        function updateScore(){
-            scoreElement.textContent=score;
-            saveBestScore();
+        // 播放音效（兼容修复）
+        function playSound(type) {
+            if (!soundEnabled || !sounds[type]) return;
+            try {
+                const soundClone = sounds[type].cloneNode();
+                soundClone.volume = 0.5;
+                soundClone.play().catch(err => console.log('音效播放失败:', err));
+            } catch (e) {
+                console.log('音效初始化失败:', e.message);
+            }
         }
 
-        function vibrate(){
-            if(navigator.vibrate && soundEnabled){
+        // 震动反馈（移动端）
+        function vibrate() {
+            if (navigator.vibrate && soundEnabled) {
                 navigator.vibrate(30);
             }
         }
 
-        function move(dir){
-            if(gameOver||gameWon)return;
-            let g=JSON.parse(JSON.stringify(grid));
-            let moved=0,merged=0;
+        // 切换音效开关（修复按钮逻辑）
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            dom.soundToggleBtn.textContent = soundEnabled ? '音效：开启' : '音效：关闭';
+            // 播放反馈音效
+            playSound('move');
+        }
 
-            function slide(arr){
-                let a=arr.filter(x=>x);
-                for(let i=0;i<a.length-1;i++){
-                    if(a[i]==a[i+1]){
-                        a[i]*=2; score+=a[i]; a[i+1]=0; merged++;
+        // 切换游戏难度（修复按钮逻辑）
+        function changeDifficulty(level) {
+            // 更新难度状态
+            difficulty = level;
+            // 更新按钮样式
+            dom.difficultyBtns.forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.level === level);
+            });
+            // 重新初始化游戏
+            init();
+            // 播放反馈音效
+            playSound('move');
+        }
+
+        // 显示胜利弹窗
+        function showWinModal() {
+            playSound('win');
+            dom.winModal.classList.add('active');
+        }
+
+        // 显示游戏结束弹窗
+        function showGameOverModal() {
+            gameOver = true;
+            playSound('gameOver');
+            dom.gameOverText.textContent = `最终得分：${score}`;
+            dom.gameOverModal.classList.add('active');
+        }
+
+        // 关闭所有弹窗
+        function closeModals() {
+            dom.winModal.classList.remove('active');
+            dom.gameOverModal.classList.remove('active');
+        }
+
+        // 检查游戏是否结束
+        function checkGameOver() {
+            // 检查是否有空单元格
+            for (let i = 0; i < 4; i++) {
+                for (let j = 0; j < 4; j++) {
+                    if (grid[i][j] === 0) return;
+                    // 检查上下相邻可合并
+                    if (i < 3 && grid[i][j] === grid[i+1][j]) return;
+                    // 检查左右相邻可合并
+                    if (j < 3 && grid[i][j] === grid[i][j+1]) return;
+                }
+            }
+            // 无任何可操作空间，游戏结束
+            showGameOverModal();
+        }
+
+        // 移动方块核心逻辑
+        function move(direction) {
+            if (gameOver) return; // 游戏结束后禁止操作
+
+            let newGrid = JSON.parse(JSON.stringify(grid));
+            let moved = false;
+            let merged = false;
+
+            // 滑动合并逻辑封装
+            function slideAndMerge(arr) {
+                // 过滤空值
+                let newArr = arr.filter(val => val !== 0);
+                // 合并相同数值
+                for (let i = 0; i < newArr.length - 1; i++) {
+                    if (newArr[i] === newArr[i+1]) {
+                        newArr[i] *= 2;
+                        score += newArr[i];
+                        newArr[i+1] = 0;
+                        merged = true;
+                        moved = true;
                     }
                 }
-                a=a.filter(x=>x);
-                while(a.length<4)a.push(0);
-                return a;
+                // 再次过滤空值并补零
+                newArr = newArr.filter(val => val !== 0);
+                while (newArr.length < 4) newArr.push(0);
+                return newArr;
             }
 
-            if(dir=='left'){
-                for(let i=0;i<4;i++){
-                    let r=slide(g[i]);
-                    if(r+''!==g[i]+'')moved=1;
-                    g[i]=r;
-                }
-            }
-            if(dir=='right'){
-                for(let i=0;i<4;i++){
-                    let r=slide([...g[i]].reverse()).reverse();
-                    if(r+''!==g[i]+'')moved=1;
-                    g[i]=r;
-                }
-            }
-            if(dir=='up'){
-                for(let j=0;j<4;j++){
-                    let c=slide([g[0][j],g[1][j],g[2][j],g[3][j]]);
-                    for(let i=0;i<4;i++){if(g[i][j]!==c[i])moved=1;g[i][j]=c[i];}
-                }
-            }
-            if(dir=='down'){
-                for(let j=0;j<4;j++){
-                    let c=slide([g[0][j],g[1][j],g[2][j],g[3][j]].reverse()).reverse();
-                    for(let i=0;i<4;i++){if(g[i][j]!==c[i])moved=1;g[i][j]=c[i];}
-                }
+            // 按方向处理
+            switch(direction) {
+                case 'left':
+                    for (let i = 0; i < 4; i++) {
+                        const row = slideAndMerge(newGrid[i]);
+                        if (JSON.stringify(row) !== JSON.stringify(newGrid[i])) {
+                            moved = true;
+                            newGrid[i] = row;
+                        }
+                    }
+                    break;
+                case 'right':
+                    for (let i = 0; i < 4; i++) {
+                        const row = slideAndMerge([...newGrid[i]].reverse()).reverse();
+                        if (JSON.stringify(row) !== JSON.stringify(newGrid[i])) {
+                            moved = true;
+                            newGrid[i] = row;
+                        }
+                    }
+                    break;
+                case 'up':
+                    for (let j = 0; j < 4; j++) {
+                        const col = slideAndMerge(newGrid.map(row => row[j]));
+                        for (let i = 0; i < 4; i++) {
+                            if (newGrid[i][j] !== col[i]) {
+                                moved = true;
+                                newGrid[i][j] = col[i];
+                            }
+                        }
+                    }
+                    break;
+                case 'down':
+                    for (let j = 0; j < 4; j++) {
+                        const col = slideAndMerge(newGrid.map(row => row[j]).reverse()).reverse();
+                        for (let i = 0; i < 4; i++) {
+                            if (newGrid[i][j] !== col[i]) {
+                                moved = true;
+                                newGrid[i][j] = col[i];
+                            }
+                        }
+                    }
+                    break;
             }
 
-            if(moved){
-                grid=g;
+            // 有移动则更新网格
+            if (moved) {
+                grid = newGrid;
                 addRandomTile();
                 updateScore();
                 render();
                 vibrate();
-                playSound(merged?'merge':'move'); // 修复：播放移动/合并音效
-                checkGameOver();
+                playSound(merged ? 'merge' : 'move');
+                
+                // 检查游戏是否结束
+                if (!gameWon) checkGameOver();
             }
         }
 
-        function checkGameOver(){
-            for(let i=0;i<4;i++)for(let j=0;j<4;j++){
-                if(grid[i][j]==0)return;
-                if(i<3&&grid[i][j]==grid[i+1][j])return;
-                if(j<3&&grid[i][j]==grid[i][j+1])return;
-            }
-            gameOver=true;
-            showGameOver();
-        }
-
-        function closeModals(){
-            document.getElementById('win-modal').classList.remove('active');
-            document.getElementById('game-over-modal').classList.remove('active');
-        }
-        function showWin(){
-            playSound('win'); // 修复：播放胜利音效
-            document.getElementById('win-modal').classList.add('active');
-        }
-        function showGameOver(){
-            playSound('gameOver'); // 修复：播放结束音效
-            document.getElementById('game-over-text').textContent='最终得分：'+score;
-            document.getElementById('game-over-modal').classList.add('active');
-        }
-
-        document.getElementById('new-game-btn').onclick=init;
-        document.getElementById('restart-over-btn').onclick=init;
-        document.getElementById('restart-win-btn').onclick=init;
-        document.getElementById('continue-btn').onclick=()=>{closeModals();gameWon=false;};
-
-        document.getElementById('sound-toggle').onclick=()=>{
-            soundEnabled=!soundEnabled;
-            document.getElementById('sound-toggle').textContent=soundEnabled?'音效：开启':'音效：关闭';
-        };
-
-        document.querySelectorAll('.difficulty-btn').forEach(b=>{
-            b.onclick=()=>{
-                document.querySelectorAll('.difficulty-btn').forEach(x=>x.classList.remove('active'));
-                b.classList.add('active');
-                difficulty=b.dataset.level;
-                init();
-            }
-        });
-
-        // 修复：阻止键盘事件默认行为（防止方向键滚动）
-        document.addEventListener('keydown',e=>{
-            if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){
+        // 绑定所有事件（核心修复：确保按钮事件正确绑定）
+        function bindEvents() {
+            // 重新开始按钮
+            dom.newGameBtn.addEventListener('click', init);
+            dom.restartWinBtn.addEventListener('click', init);
+            dom.restartOverBtn.addEventListener('click', init);
+            
+            // 继续挑战按钮
+            dom.continueBtn.addEventListener('click', () => {
+                closeModals();
+                gameWon = false;
+                playSound('move');
+            });
+            
+            // 音效开关按钮
+            dom.soundToggleBtn.addEventListener('click', toggleSound);
+            
+            // 难度选择按钮
+            dom.difficultyBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    changeDifficulty(btn.dataset.level);
+                });
+            });
+            
+            // 键盘控制
+            document.addEventListener('keydown', (e) => {
+                // 阻止方向键滚动页面
+                if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
+                    e.preventDefault();
+                }
+                if (gameOver) return;
+                
+                switch(e.key) {
+                    case 'ArrowLeft': move('left'); break;
+                    case 'ArrowRight': move('right'); break;
+                    case 'ArrowUp': move('up'); break;
+                    case 'ArrowDown': move('down'); break;
+                    case 'r': case 'R': init(); break; // 快捷键
+                }
+            });
+            
+            // 触摸控制（修复滑动穿透）
+            let touchStartX = 0, touchStartY = 0;
+            document.addEventListener('touchstart', (e) => {
                 e.preventDefault();
-            }
-            if(gameOver)return;
-            switch(e.key){
-                case'ArrowLeft':move('left');break;
-                case'ArrowRight':move('right');break;
-                case'ArrowUp':move('up');break;
-                case'ArrowDown':move('down');break;
-                case'r':case'R':init();break;
-            }
-        });
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+            });
+            
+            document.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+            });
+            
+            document.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                const dx = e.changedTouches[0].clientX - touchStartX;
+                const dy = e.changedTouches[0].clientY - touchStartY;
+                
+                // 判断滑动方向（阈值30px防误触）
+                if (Math.abs(dx) > Math.abs(dy)) {
+                    dx > 30 ? move('right') : (dx < -30 && move('left'));
+                } else {
+                    dy > 30 ? move('down') : (dy < -30 && move('up'));
+                }
+            });
+        }
 
-        // 修复：触摸滑动时阻止屏幕滚动
-        let sx=0,sy=0;
-        document.addEventListener('touchstart',e=>{
-            e.preventDefault(); // 阻止默认触摸行为
-            sx=e.touches[0].clientX;
-            sy=e.touches[0].clientY;
+        // 页面加载完成后初始化
+        window.addEventListener('DOMContentLoaded', () => {
+            bindEvents(); // 先绑定事件
+            init(); // 再初始化游戏
         });
-        document.addEventListener('touchmove',e=>{
-            e.preventDefault(); // 彻底禁止滑动时的屏幕滚动
-        });
-        document.addEventListener('touchend',e=>{
-            e.preventDefault();
-            let dx=e.changedTouches[0].clientX-sx;
-            let dy=e.changedTouches[0].clientY-sy;
-            if(Math.abs(dx)>Math.abs(dy)){
-                if(dx>30)move('right');else if(dx<-30)move('left');
-            }else{
-                if(dy>30)move('down');else if(dy<-30)move('up');
-            }
-        });
-
-        // 初始化游戏
-        init();
     </script>
 </body>
 </html>
