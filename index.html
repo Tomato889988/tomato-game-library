@@ -4,14 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="touch-action" content="manipulation">
-    <title>番茄制作2048 - 手机完美版</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>番茄制作2048 - 全终端适配版</title>
     <style>
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Microsoft YaHei', 'Arial', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Microsoft YaHei', 'Arial', sans-serif;
             -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            touch-action: none;
         }
 
         body {
@@ -20,20 +29,18 @@
             flex-direction: column;
             align-items: center;
             justify-content: flex-start;
+            padding: env(safe-area-inset-top, 15px) env(safe-area-inset-right, 10px) env(safe-area-inset-bottom, 15px) env(safe-area-inset-left, 10px);
             min-height: 100vh;
-            padding: 15px 10px;
-            overflow: hidden;
-            touch-action: none;
         }
 
         .container {
             width: 100%;
-            max-width: 400px;
+            max-width: 420px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 10px;
-            margin-top: 10px;
+            gap: clamp(8px, 2vw, 10px);
+            margin-top: clamp(8px, 2vw, 10px);
         }
 
         .header {
@@ -41,27 +48,29 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 5px;
+            margin-bottom: clamp(4px, 1vw, 5px);
+            padding: 0 clamp(5px, 1vw, 8px);
         }
 
         .title {
-            font-size: 32px;
+            font-size: clamp(24px, 8vw, 32px);
             font-weight: bold;
             color: #776e65;
+            line-height: 1.2;
         }
 
         .score-panel {
             display: flex;
-            gap: 6px;
+            gap: clamp(4px, 1vw, 6px);
         }
 
         .score-container, .best-score-container {
             background-color: #bbada0;
-            padding: 6px 10px;
-            border-radius: 5px;
+            padding: clamp(4px, 1vw, 6px) clamp(8px, 1.5vw, 10px);
+            border-radius: clamp(4px, 1vw, 5px);
             color: white;
             text-align: center;
-            min-width: 65px;
+            min-width: clamp(55px, 15vw, 65px);
             position: relative;
         }
 
@@ -74,58 +83,59 @@
         }
         .record-toast {
             position: absolute;
-            top: -18px;
+            top: clamp(-15px, -4vw, -18px);
             left: 50%;
             transform: translateX(-50%);
             background-color: #f65e3b;
             color: white;
-            font-size: 11px;
-            padding: 2px 6px;
-            border-radius: 4px;
+            font-size: clamp(9px, 2vw, 11px);
+            padding: clamp(1px, 0.5vw, 2px) clamp(4px, 1vw, 6px);
+            border-radius: clamp(3px, 1vw, 4px);
             animation: toastPop 1s ease;
             opacity: 0;
         }
         @keyframes toastPop {
-            0% { opacity: 0; top: -15px; }
-            50% { opacity: 1; top: -18px; }
-            100% { opacity: 0; top: -22px; }
+            0% { opacity: 0; top: clamp(-12px, -3vw, -15px); }
+            50% { opacity: 1; top: clamp(-15px, -4vw, -18px); }
+            100% { opacity: 0; top: clamp(-18px, -5vw, -22px); }
         }
 
         .score-label {
-            font-size: 11px;
+            font-size: clamp(9px, 2vw, 11px);
             color: #eee4da;
         }
 
         .score, .best-score {
-            font-size: 18px;
+            font-size: clamp(14px, 4vw, 18px);
             font-weight: bold;
         }
         .best-score.new-record {
             color: #fff600;
-            text-shadow: 0 0 5px #ffd700;
+            text-shadow: 0 0 clamp(3px, 1vw, 5px) #ffd700;
         }
 
         .btn-group {
             width: 100%;
             display: flex;
             justify-content: center;
-            gap: 8px;
-            margin: 5px 0;
+            gap: clamp(6px, 1.5vw, 8px);
+            margin: clamp(4px, 1vw, 5px) 0;
+            padding: 0 clamp(5px, 1vw, 8px);
         }
 
         .control-btn {
             background-color: #8f7a66;
             color: white;
             border: none;
-            padding: 10px 12px;
-            border-radius: 6px;
-            font-size: 14px;
+            padding: clamp(8px, 2vw, 10px) clamp(10px, 2.5vw, 12px);
+            border-radius: clamp(5px, 1.5vw, 6px);
+            font-size: clamp(12px, 3vw, 14px);
             font-weight: bold;
             cursor: pointer;
             transition: all 0.2s;
             position: relative;
             overflow: hidden;
-            min-width: 80px;
+            min-width: clamp(70px, 18vw, 80px);
             touch-action: manipulation;
             -webkit-user-select: none;
             user-select: none;
@@ -139,20 +149,22 @@
             width: 100%;
             display: flex;
             justify-content: center;
-            gap: 6px;
-            margin: 5px 0;
+            gap: clamp(4px, 1vw, 6px);
+            margin: clamp(4px, 1vw, 5px) 0;
+            padding: 0 clamp(5px, 1vw, 8px);
         }
 
         .difficulty-btn {
-            padding: 8px 10px;
+            padding: clamp(6px, 1.5vw, 8px) clamp(8px, 2vw, 10px);
             border: none;
-            border-radius: 5px;
+            border-radius: clamp(4px, 1vw, 5px);
             background-color: #bbada0;
             color: white;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.2s;
-            min-width: 70px;
+            min-width: clamp(60px, 16vw, 70px);
+            font-size: clamp(11px, 2.5vw, 13px);
             touch-action: manipulation;
             -webkit-user-select: none;
             user-select: none;
@@ -166,28 +178,30 @@
 
         .tips {
             color: #776e65;
-            font-size: 12px;
+            font-size: clamp(10px, 2.5vw, 12px);
             text-align: center;
-            margin: 5px 0;
+            margin: clamp(4px, 1vw, 5px) 0;
+            padding: 0 clamp(5px, 1vw, 8px);
         }
 
-        /* 核心修复：网格容器布局，确保宽高比绝对一致 */
+        /* 核心适配：网格容器 - 全终端精准适配 */
         .grid-container {
-            width: 100%;
-            max-width: 350px;
-            aspect-ratio: 1/1; /* 替代padding-bottom，更稳定的正方形 */
+            width: min(90vw, 400px); /* 适配平板宽屏，最大400px */
+            aspect-ratio: 1/1; /* 绝对正方形，兼容所有设备 */
             background-color: #bbada0;
-            border-radius: 10px;
-            padding: 8px;
+            border-radius: clamp(8px, 2vw, 10px);
+            padding: clamp(6px, 1.5vw, 8px);
             position: relative;
             touch-action: manipulation;
-            margin: 10px 0;
+            margin: clamp(8px, 2vw, 10px) 0;
+            /* 修复不同浏览器渲染偏差 */
+            box-sizing: border-box !important;
         }
 
         .grid-row {
             display: flex;
-            margin-bottom: 8px;
-            height: calc(25% - 6px);
+            margin-bottom: clamp(6px, 1.5vw, 8px);
+            height: calc(25% - (3 * clamp(6px, 1.5vw, 8px)) / 4);
             position: relative;
         }
 
@@ -196,29 +210,32 @@
         }
 
         .grid-cell {
-            width: calc(25% - 6px);
+            width: calc(25% - (3 * clamp(6px, 1.5vw, 8px)) / 4);
             height: 100%;
             background-color: #cdc1b4;
-            border-radius: 5px;
-            margin-right: 8px;
+            border-radius: clamp(4px, 1vw, 5px);
+            margin-right: clamp(6px, 1.5vw, 8px);
         }
 
         .grid-cell:last-child {
             margin-right: 0;
         }
 
-        /* 核心修复：方块基础样式适配 */
+        /* 核心适配：方块样式 - 全终端精准对齐 */
         .tile {
             position: absolute;
-            border-radius: 5px;
+            border-radius: clamp(4px, 1vw, 5px);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: clamp(18px, 6vw, 28px); /* 响应式字体大小 */
             font-weight: bold;
             transition: all 0.15s ease-out;
             animation: tilePop 0.2s ease;
             touch-action: none;
+            /* 防止文字溢出 */
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
         }
         .tile-merge {
             animation: tileMerge 0.3s ease;
@@ -234,30 +251,35 @@
             100% { transform: scale(1); opacity: 1; }
         }
 
-        .tile-2 { background-color: #eee4da; color: #776e65; }
-        .tile-4 { background-color: #ede0c8; color: #776e65; }
-        .tile-8 { background-color: #f2b179; color: #f9f6f2; }
-        .tile-16 { background-color: #f59563; color: #f9f6f2; }
-        .tile-32 { background-color: #f67c5f; color: #f9f6f2; }
-        .tile-64 { background-color: #f65e3b; color: #f9f6f2; }
-        .tile-128 { background-color: #edcf72; color: #f9f6f2; font-size: clamp(16px, 5vw, 22px); }
-        .tile-256 { background-color: #edcc61; color: #f9f6f2; font-size: clamp(16px, 5vw, 22px); }
-        .tile-512 { background-color: #edc850; color: #f9f6f2; font-size: clamp(16px, 5vw, 22px); }
-        .tile-1024 { background-color: #edc53f; color: #f9f6f2; font-size: clamp(14px, 4vw, 20px); }
-        .tile-2048 { background-color: #edc22e; color: #f9f6f2; font-size: clamp(14px, 4vw, 20px); }
-        .tile-super { background-color: #3c3a32; color: #f9f6f2; font-size: clamp(12px, 3vw, 18px); }
+        /* 方块配色 + 响应式字体 */
+        .tile-2 { background-color: #eee4da; color: #776e65; font-size: clamp(16px, 5vw, 28px); }
+        .tile-4 { background-color: #ede0c8; color: #776e65; font-size: clamp(16px, 5vw, 28px); }
+        .tile-8 { background-color: #f2b179; color: #f9f6f2; font-size: clamp(16px, 5vw, 28px); }
+        .tile-16 { background-color: #f59563; color: #f9f6f2; font-size: clamp(16px, 5vw, 28px); }
+        .tile-32 { background-color: #f67c5f; color: #f9f6f2; font-size: clamp(16px, 5vw, 28px); }
+        .tile-64 { background-color: #f65e3b; color: #f9f6f2; font-size: clamp(16px, 5vw, 28px); }
+        .tile-128 { background-color: #edcf72; color: #f9f6f2; font-size: clamp(14px, 4.5vw, 22px); }
+        .tile-256 { background-color: #edcc61; color: #f9f6f2; font-size: clamp(14px, 4.5vw, 22px); }
+        .tile-512 { background-color: #edc850; color: #f9f6f2; font-size: clamp(14px, 4.5vw, 22px); }
+        .tile-1024 { background-color: #edc53f; color: #f9f6f2; font-size: clamp(12px, 4vw, 20px); }
+        .tile-2048 { background-color: #edc22e; color: #f9f6f2; font-size: clamp(12px, 4vw, 20px); }
+        .tile-super { background-color: #3c3a32; color: #f9f6f2; font-size: clamp(10px, 3.5vw, 18px); }
 
+        /* 弹窗适配 - 全终端居中且不溢出 */
         .modal {
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
             background: rgba(238, 228, 218, 0.98);
-            display: flex; align-items: center; justify-content: center;
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
             z-index: 9999;
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.3s;
             touch-action: none;
+            padding: env(safe-area-inset-top, 20px) env(safe-area-inset-right, 20px) env(safe-area-inset-bottom, 20px) env(safe-area-inset-left, 20px);
         }
         .modal.active {
             opacity: 1;
@@ -265,35 +287,36 @@
         }
         .modal-content {
             background: white;
-            padding: 25px 20px;
-            border-radius: 10px;
+            padding: clamp(20px, 5vw, 25px) clamp(15px, 4vw, 20px);
+            border-radius: clamp(8px, 2vw, 10px);
             text-align: center;
-            max-width: 300px;
+            max-width: clamp(280px, 80vw, 320px);
             width: 90%;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            box-shadow: 0 clamp(4px, 1vw, 5px) clamp(15px, 4vw, 20px) rgba(0,0,0,0.2);
             touch-action: manipulation;
         }
         .modal-title {
-            font-size: 24px;
+            font-size: clamp(20px, 5vw, 24px);
             color: #776e65;
-            margin-bottom: 12px;
+            margin-bottom: clamp(10px, 2.5vw, 12px);
             font-weight: bold;
         }
         .modal-text {
             color: #776e65;
-            margin-bottom: 18px;
-            font-size: 15px;
+            margin-bottom: clamp(15px, 4vw, 18px);
+            font-size: clamp(13px, 3.5vw, 15px);
         }
         .modal-btn {
             background: #8f7a66;
             color: white;
             border: none;
-            padding: 10px 18px;
-            border-radius: 6px;
-            margin: 5px;
+            padding: clamp(8px, 2vw, 10px) clamp(15px, 4vw, 18px);
+            border-radius: clamp(5px, 1.5vw, 6px);
+            margin: clamp(4px, 1vw, 5px);
             cursor: pointer;
             transition: all 0.2s;
-            min-width: 80px;
+            min-width: clamp(70px, 18vw, 80px);
+            font-size: clamp(12px, 3vw, 14px);
             touch-action: manipulation;
             -webkit-user-select: none;
             user-select: none;
@@ -312,28 +335,29 @@
             100% { transform: scale(1.1); }
         }
         .win-modal .modal-text {
-            font-size: 16px;
+            font-size: clamp(14px, 3.8vw, 16px);
             color: #f65e3b;
         }
 
         .ranking-modal .modal-content {
-            padding: 20px 15px;
-            max-width: 320px;
+            padding: clamp(15px, 4vw, 20px) clamp(10px, 3vw, 15px);
+            max-width: clamp(300px, 85vw, 320px);
         }
         .ranking-tabs {
             display: flex;
             justify-content: center;
-            gap: 5px;
-            margin-bottom: 12px;
+            gap: clamp(4px, 1vw, 5px);
+            margin-bottom: clamp(10px, 2.5vw, 12px);
         }
         .ranking-tab {
-            padding: 6px 12px;
+            padding: clamp(5px, 1.5vw, 6px) clamp(10px, 2.5vw, 12px);
             border: none;
-            border-radius: 4px;
+            border-radius: clamp(3px, 1vw, 4px);
             background-color: #bbada0;
             color: white;
             cursor: pointer;
             transition: all 0.2s;
+            font-size: clamp(11px, 2.5vw, 13px);
             touch-action: manipulation;
             -webkit-user-select: none;
             user-select: none;
@@ -342,51 +366,51 @@
             background-color: #8f7a66;
         }
         .ranking-list {
-            max-height: 250px;
+            max-height: clamp(200px, 50vw, 250px);
             overflow-y: auto;
-            margin: 10px 0;
+            margin: clamp(8px, 2vw, 10px) 0;
         }
         .ranking-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 6px 8px;
+            padding: clamp(5px, 1.5vw, 6px) clamp(6px, 1.5vw, 8px);
             border-bottom: 1px solid #eee;
-            margin-bottom: 4px;
-            font-size: 14px;
+            margin-bottom: clamp(3px, 1vw, 4px);
+            font-size: clamp(12px, 3vw, 14px);
         }
         .ranking-item:first-child {
             background-color: #f2b179;
             color: white;
-            border-radius: 5px;
+            border-radius: clamp(4px, 1vw, 5px);
         }
         .ranking-item:nth-child(2) {
             background-color: #cdc1b4;
             color: white;
-            border-radius: 5px;
+            border-radius: clamp(4px, 1vw, 5px);
         }
         .ranking-item:nth-child(3) {
             background-color: #bbada0;
             color: white;
-            border-radius: 5px;
+            border-radius: clamp(4px, 1vw, 5px);
         }
         .rank-num {
             font-weight: bold;
-            width: 25px;
+            width: clamp(20px, 5vw, 25px);
             text-align: center;
         }
         .rank-score {
             font-weight: bold;
-            width: 50px;
+            width: clamp(40px, 10vw, 50px);
             text-align: right;
         }
         .rank-date {
-            font-size: 11px;
+            font-size: clamp(9px, 2vw, 11px);
             color: #776e65;
         }
         .clear-ranking-btn {
             background-color: #f65e3b;
-            margin-top: 8px;
+            margin-top: clamp(6px, 1.5vw, 8px);
         }
         .clear-ranking-btn:hover, .clear-ranking-btn:active {
             background-color: #e54a28;
@@ -394,20 +418,54 @@
 
         .sound-tip {
             position: fixed;
-            bottom: 15px;
+            bottom: env(safe-area-inset-bottom, 15px);
             left: 50%;
             transform: translateX(-50%);
             background-color: rgba(0,0,0,0.7);
             color: white;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 13px;
+            padding: clamp(4px, 1.5vw, 6px) clamp(10px, 2.5vw, 12px);
+            border-radius: clamp(15px, 5vw, 20px);
+            font-size: clamp(11px, 3vw, 13px);
             z-index: 999;
             opacity: 0;
             transition: opacity 0.3s;
         }
         .sound-tip.active {
             opacity: 1;
+        }
+
+        /* 平板横屏适配 */
+        @media (orientation: landscape) and (min-width: 768px) {
+            body {
+                flex-direction: row;
+                justify-content: center;
+                align-items: center;
+                gap: clamp(20px, 5vw, 30px);
+                padding: clamp(15px, 3vw, 20px);
+            }
+            .container {
+                max-width: clamp(350px, 40vw, 400px);
+                margin-top: 0;
+            }
+            .grid-container {
+                width: clamp(300px, 40vw, 400px);
+            }
+        }
+
+        /* 苹果刘海屏/灵动岛适配 */
+        @supports (padding: max(0px)) {
+            body {
+                padding-top: max(env(safe-area-inset-top), 15px);
+                padding-bottom: max(env(safe-area-inset-bottom), 15px);
+                padding-left: max(env(safe-area-inset-left), 10px);
+                padding-right: max(env(safe-area-inset-right), 10px);
+            }
+            .modal {
+                padding: max(env(safe-area-inset-top), 20px) max(env(safe-area-inset-right), 20px) max(env(safe-area-inset-bottom), 20px) max(env(safe-area-inset-left), 20px);
+            }
+            .sound-tip {
+                bottom: max(env(safe-area-inset-bottom), 15px);
+            }
         }
     </style>
 </head>
@@ -540,7 +598,7 @@
             soundTip: document.getElementById('sound-tip')
         };
 
-        // 封装点击事件绑定
+        // 封装点击事件绑定（兼容所有终端）
         function bindClick(el, callback) {
             let isClicked = false;
             const handler = (e) => {
@@ -616,7 +674,7 @@
             dom.rankingList.innerHTML = '';
             
             if (rankingList.length === 0) {
-                dom.rankingList.innerHTML = `<div style="padding: 15px; color: #776e65; font-size: 14px;">暂无${level === 'easy' ? '简单' : level === 'normal' ? '普通' : '困难'}难度记录</div>`;
+                dom.rankingList.innerHTML = `<div style="padding: 15px; color: #776e65; font-size: clamp(12px, 3vw, 14px);">暂无${level === 'easy' ? '简单' : level === 'normal' ? '普通' : '困难'}难度记录</div>`;
                 return;
             }
             
@@ -698,11 +756,11 @@
                 addRandomTile();
             }
             
-            // 核心修复：延迟渲染确保容器尺寸已计算
-            setTimeout(() => {
+            // 确保容器尺寸计算完成后渲染
+            requestAnimationFrame(() => {
                 render();
                 if (soundInited) playSound('newTile');
-            }, 50);
+            });
         }
 
         function addRandomTile() {
@@ -732,20 +790,29 @@
             grid[i][j] = value;
         }
 
-        // 核心修复：方块位置计算（精准适配所有屏幕）
+        // 核心适配：方块位置精准计算（兼容所有终端）
         function render() {
             const tiles = dom.gridContainer.querySelectorAll('.tile');
             tiles.forEach(tile => tile.remove());
 
-            // 强制刷新布局，确保获取准确尺寸
+            // 强制刷新布局，获取最终渲染尺寸
             dom.gridContainer.offsetHeight;
             
-            const gridWidth = dom.gridContainer.offsetWidth;
-            const padding = 8; // 容器内边距
-            const gap = 8; // 单元格间距
-            const cellCount = 4; // 4x4网格
-            // 精准计算单个方块尺寸（扣除内边距和间距）
+            // 获取容器实际尺寸（兼容不同设备渲染）
+            const gridRect = dom.gridContainer.getBoundingClientRect();
+            const gridWidth = gridRect.width;
+            // 动态获取CSS中的padding和gap（适配不同终端的clamp值）
+            const style = getComputedStyle(dom.gridContainer);
+            const padding = parseFloat(style.paddingLeft);
+            const gap = parseFloat(getComputedStyle(document.querySelector('.grid-cell')).marginRight);
+            const cellCount = 4;
+            
+            // 精准计算单个方块尺寸（消除所有舍入误差）
             const cellSize = (gridWidth - 2 * padding - (cellCount - 1) * gap) / cellCount;
+            // 四舍五入到小数点后2位，避免像素偏差
+            const preciseCellSize = Math.round(cellSize * 100) / 100;
+            const preciseGap = Math.round(gap * 100) / 100;
+            const precisePadding = Math.round(padding * 100) / 100;
 
             for (let i = 0; i < 4; i++) {
                 for (let j = 0; j < 4; j++) {
@@ -757,14 +824,15 @@
                     tile.classList.add('tile', tileClass);
                     tile.textContent = value;
                     
-                    // 精准计算每个方块的位置（从容器内边距开始）
-                    const top = padding + i * (cellSize + gap);
-                    const left = padding + j * (cellSize + gap);
+                    // 精准计算位置（消除所有偏移）
+                    const top = precisePadding + i * (preciseCellSize + preciseGap);
+                    const left = precisePadding + j * (preciseCellSize + preciseGap);
                     
+                    // 使用px固定值，避免百分比偏差
                     tile.style.top = `${top}px`;
                     tile.style.left = `${left}px`;
-                    tile.style.width = `${cellSize}px`;
-                    tile.style.height = `${cellSize}px`;
+                    tile.style.width = `${preciseCellSize}px`;
+                    tile.style.height = `${preciseCellSize}px`;
                     
                     dom.gridContainer.appendChild(tile);
 
@@ -912,25 +980,27 @@
 
         // 绑定所有事件
         function bindEvents() {
+            // 首次交互激活音效（兼容iOS）
             document.addEventListener('touchstart', initSound, { once: true, passive: false });
             document.addEventListener('click', initSound, { once: true });
 
+            // 按钮事件
             bindClick(dom.newGameBtn, init);
             bindClick(dom.restartWinBtn, init);
             bindClick(dom.restartOverBtn, init);
-            
             bindClick(dom.soundToggleBtn, toggleSound);
-            
             bindClick(dom.continueBtn, () => {
                 closeModals();
                 gameWon = false;
                 playSound('move');
             });
             
+            // 难度选择
             dom.difficultyBtns.forEach(btn => {
                 bindClick(btn, () => changeDifficulty(btn.dataset.level));
             });
 
+            // 排行榜事件
             bindClick(dom.rankingBtn, () => {
                 currentRankingTab = difficulty;
                 dom.rankingTabs.forEach(tab => {
@@ -968,6 +1038,7 @@
             
             bindClick(dom.clearRankingBtn, () => clearRankingList(currentRankingTab));
             
+            // 键盘控制（适配外接键盘）
             document.addEventListener('keydown', (e) => {
                 if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) e.preventDefault();
                 if (gameOver || (gameWon && dom.winModal.classList.contains('active'))) return;
@@ -981,7 +1052,7 @@
                 }
             });
             
-            // 触摸滑动控制
+            // 触摸滑动控制（全终端精准识别）
             let touchStartX = 0, touchStartY = 0;
             let touchTimeout = null;
             
@@ -1006,7 +1077,8 @@
                 touchTimeout = setTimeout(() => {
                     const dx = e.changedTouches[0].clientX - touchStartX;
                     const dy = e.changedTouches[0].clientY - touchStartY;
-                    const threshold = 20;
+                    // 自适应滑动阈值（不同屏幕尺寸）
+                    const threshold = Math.min(20, Math.floor(window.innerWidth * 0.05));
                     
                     if (Math.abs(dx) > Math.abs(dy)) {
                         if (dx > threshold) move('right');
@@ -1018,25 +1090,50 @@
                 }, 50);
             }, { passive: false });
 
-            // 窗口变化/旋转时重新渲染
-            window.addEventListener('resize', () => {
-                if (!gameOver) setTimeout(render, 50);
-            });
-            // 页面显示时重新渲染（解决切后台回来错位）
+            // 自适应重绘（解决所有尺寸变化场景）
+            const debounceRender = debounce(() => {
+                if (!gameOver) render();
+            }, 50);
+            
+            window.addEventListener('resize', debounceRender);
+            window.addEventListener('orientationchange', debounceRender);
             document.addEventListener('visibilitychange', () => {
-                if (!document.hidden) setTimeout(render, 50);
+                if (!document.hidden) debounceRender();
             });
+            // 页面加载完成后强制重绘
+            window.addEventListener('load', debounceRender);
         }
 
-        // 初始化
+        // 防抖函数（避免频繁重绘）
+        function debounce(func, wait) {
+            let timeout;
+            return function() {
+                const context = this;
+                const args = arguments;
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(context, args), wait);
+            };
+        }
+
+        // 初始化（确保DOM完全加载）
         window.addEventListener('DOMContentLoaded', () => {
             bindEvents();
-            // 确保容器加载完成后再初始化游戏
+            // 等待样式加载完成后初始化
             setTimeout(() => {
                 init();
                 updateBestScore();
             }, 100);
         });
+
+        // 兼容iOS Safari的resize bug
+        if (/(iPhone|iPad|iPod)/i.test(navigator.userAgent)) {
+            window.addEventListener('resize', () => {
+                document.body.style.height = `${window.innerHeight}px`;
+                setTimeout(() => {
+                    document.body.style.height = '100%';
+                }, 0);
+            }, false);
+        }
     </script>
 </body>
 </html>
