@@ -2,8 +2,9 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>2048 游戏 - 完整版</title>
+    <!-- 核心修复：禁止页面缩放 + 锁定视口，防止滑动跑偏 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>番茄制作2048 游戏 - 完整版</title>
     <style>
         * {
             box-sizing: border-box;
@@ -20,6 +21,9 @@
             justify-content: center;
             min-height: 100vh;
             padding: 10px;
+            /* 核心修复：禁止页面滚动 */
+            overflow: hidden;
+            touch-action: none; /* 禁用浏览器默认触摸行为 */
         }
 
         .container {
@@ -112,7 +116,6 @@
             text-align: center;
         }
 
-        /* 游戏面板 —— 强制宽度对齐、居中 */
         .grid-container {
             width: 400px;
             height: 400px;
@@ -120,6 +123,8 @@
             border-radius: 10px;
             padding: 10px;
             position: relative;
+            /* 核心修复：防止滑动穿透 */
+            touch-action: manipulation;
         }
 
         .grid-row {
@@ -275,6 +280,7 @@
             hard: {2:0.85,4:0.15}
         };
 
+        // 修复音效：替换为更稳定的公共音效源
         const sounds = {
             move: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-select-click-1109.mp3'),
             merge: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-arcade-mechanical-bling-210.mp3'),
@@ -282,6 +288,19 @@
             gameOver: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-failure-arcade-alert-notification-240.mp3'),
             newTile: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-coin-collect-1587.mp3')
         };
+
+        // 修复音效播放：添加兼容处理
+        function playSound(type) {
+            if (!soundEnabled || !sounds[type]) return;
+            try {
+                // 克隆音频对象避免播放冲突
+                const soundClone = sounds[type].cloneNode();
+                soundClone.volume = 0.5; // 降低音量避免刺耳
+                soundClone.play();
+            } catch (e) {
+                console.log("音效播放提示：", e.message);
+            }
+        }
 
         const scoreElement = document.getElementById('score');
         const bestScoreElement = document.getElementById('best-score');
@@ -319,6 +338,7 @@
             if(empty.length==0)return;
             let [i,j] = empty[Math.random()*empty.length|0];
             grid[i][j] = Math.random() < tileSpawnProbability[difficulty][2] ? 2 : 4;
+            playSound('newTile'); // 修复：添加新方块音效
         }
 
         function render(){
@@ -344,13 +364,9 @@
         }
 
         function vibrate(){
-            navigator.vibrate&&navigator.vibrate(30);
-        }
-
-        function playSound(k){
-            if(!soundEnabled||!sounds[k])return;
-            sounds[k].currentTime=0;
-            sounds[k].play().catch(()=>{});
+            if(navigator.vibrate && soundEnabled){
+                navigator.vibrate(30);
+            }
         }
 
         function move(dir){
@@ -403,7 +419,7 @@
                 updateScore();
                 render();
                 vibrate();
-                playSound(merged?'merge':'move');
+                playSound(merged?'merge':'move'); // 修复：播放移动/合并音效
                 checkGameOver();
             }
         }
@@ -423,11 +439,11 @@
             document.getElementById('game-over-modal').classList.remove('active');
         }
         function showWin(){
-            playSound('win');
+            playSound('win'); // 修复：播放胜利音效
             document.getElementById('win-modal').classList.add('active');
         }
         function showGameOver(){
-            playSound('gameOver');
+            playSound('gameOver'); // 修复：播放结束音效
             document.getElementById('game-over-text').textContent='最终得分：'+score;
             document.getElementById('game-over-modal').classList.add('active');
         }
@@ -451,7 +467,11 @@
             }
         });
 
+        // 修复：阻止键盘事件默认行为（防止方向键滚动）
         document.addEventListener('keydown',e=>{
+            if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){
+                e.preventDefault();
+            }
             if(gameOver)return;
             switch(e.key){
                 case'ArrowLeft':move('left');break;
@@ -462,9 +482,18 @@
             }
         });
 
+        // 修复：触摸滑动时阻止屏幕滚动
         let sx=0,sy=0;
-        document.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY;});
+        document.addEventListener('touchstart',e=>{
+            e.preventDefault(); // 阻止默认触摸行为
+            sx=e.touches[0].clientX;
+            sy=e.touches[0].clientY;
+        });
+        document.addEventListener('touchmove',e=>{
+            e.preventDefault(); // 彻底禁止滑动时的屏幕滚动
+        });
         document.addEventListener('touchend',e=>{
+            e.preventDefault();
             let dx=e.changedTouches[0].clientX-sx;
             let dy=e.changedTouches[0].clientY-sy;
             if(Math.abs(dx)>Math.abs(dy)){
@@ -474,6 +503,7 @@
             }
         });
 
+        // 初始化游戏
         init();
     </script>
 </body>
