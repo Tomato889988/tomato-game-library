@@ -192,6 +192,7 @@
             100% { opacity: 1; transform: translateY(-2px); }
         }
 
+        /* 核心修复1：网格容器精准定位 */
         .grid-container {
             background-color: #bbada0;
             border-radius: clamp(8px, 2vw, 10px);
@@ -201,19 +202,26 @@
             border: none;
             outline: none;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            /* 强制固定宽高比，避免变形 */
+            width: 100%;
+            max-width: 400px;
         }
 
         .grid-row {
             display: flex;
             position: relative;
+            width: 100%;
         }
 
         .grid-cell {
             background-color: #cdc1b4;
             border-radius: clamp(4px, 1vw, 5px);
             box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+            flex: 1;
+            margin: 0;
         }
 
+        /* 核心修复2：方块字体大小分级控制，避免过大 */
         .tile {
             position: absolute;
             border-radius: clamp(4px, 1vw, 5px);
@@ -229,7 +237,30 @@
             text-overflow: ellipsis;
             box-sizing: border-box;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            /* 基础字体大小，按方块尺寸比例严格控制 */
+            font-size: clamp(14px, 5vw, 24px) !important;
+            /* 防止字体溢出 */
+            line-height: 1;
+            padding: 2px;
         }
+        
+        /* 不同数字分级调整字体大小 */
+        .tile-2, .tile-4 {
+            font-size: clamp(16px, 6vw, 28px) !important;
+        }
+        .tile-8, .tile-16, .tile-32, .tile-64 {
+            font-size: clamp(14px, 5vw, 24px) !important;
+        }
+        .tile-128, .tile-256, .tile-512 {
+            font-size: clamp(12px, 4vw, 20px) !important;
+        }
+        .tile-1024, .tile-2048 {
+            font-size: clamp(10px, 3.5vw, 18px) !important;
+        }
+        .tile-super {
+            font-size: clamp(8px, 3vw, 16px) !important;
+        }
+        
         .tile-merge {
             animation: tileMerge 0.3s ease;
         }
@@ -566,38 +597,41 @@
 
             let basePaddingTop = 15;
             let gridWidthRatio = 0.9;
-            let gridPadding = 4;
-            let cellGap = 4;
-            let tileFontSizeRatio = 0.35; // 调整字体比例，让数字更协调
+            let gridPadding = 8; // 增大内边距，避免边框拥挤
+            let cellGap = 8;     // 统一单元格间距
+            let tileFontSizeRatio = 0.25; // 大幅降低字体比例，解决字体过大问题
 
             if (brand === 'apple' && type === 'mobile') {
                 basePaddingTop = isNotch ? 44 : 20;
-                gridWidthRatio = screen.width > 375 ? 0.95 : 0.98;
-                gridPadding = screen.width < 320 ? 3 : 4;
-                tileFontSizeRatio = screen.width < 320 ? 0.3 : 0.35;
+                gridWidthRatio = screen.width > 375 ? 0.9 : 0.95;
+                gridPadding = screen.width < 320 ? 6 : 8;
+                tileFontSizeRatio = 0.22;
             }
             else if (['huawei', 'xiaomi', 'oppo', 'vivo'].includes(brand) && type === 'mobile') {
                 basePaddingTop = isNotch ? 50 : 25;
-                gridWidthRatio = 0.93;
-                gridPadding = 4;
-                cellGap = 4;
+                gridWidthRatio = 0.88;
+                gridPadding = 8;
+                cellGap = 8;
+                tileFontSizeRatio = 0.23;
             }
             else if (brand === 'samsung' && type === 'mobile') {
                 basePaddingTop = isNotch ? 48 : 22;
-                gridWidthRatio = 0.92;
+                gridWidthRatio = 0.88;
+                tileFontSizeRatio = 0.22;
             }
             else if (type === 'tablet') {
                 basePaddingTop = 30;
                 gridWidthRatio = 0.7;
-                gridPadding = 8;
-                cellGap = 8;
-                tileFontSizeRatio = 0.4;
+                gridPadding = 12;
+                cellGap = 12;
+                tileFontSizeRatio = 0.28;
             }
             else if (type === 'desktop') {
                 basePaddingTop = 20;
                 gridWidthRatio = 0.4;
-                gridPadding = 8;
-                cellGap = 8;
+                gridPadding = 12;
+                cellGap = 12;
+                tileFontSizeRatio = 0.28;
             }
 
             dynamicCSS = `
@@ -617,24 +651,27 @@
                     margin-bottom: ${screen.width < 320 ? 2 : 4}px;
                 }
 
+                /* 核心修复：网格容器精准尺寸控制 */
                 #grid-container {
-                    width: min(${gridWidthRatio * 100}vw, 420px) !important;
-                    aspect-ratio: 1/1 !important;
+                    width: min(${gridWidthRatio * 100}vw, 400px) !important;
+                    height: min(${gridWidthRatio * 100}vw, 400px) !important;
                     padding: ${gridPadding}px !important;
                     margin: ${screen.width < 320 ? 5 : 10}px 0 !important;
                 }
 
+                /* 修复行高和间距，避免错位 */
                 .grid-row {
                     margin-bottom: ${cellGap}px !important;
-                    height: calc(25% - (3 * ${cellGap}px) / 4) !important;
+                    height: calc((100% - 3 * ${cellGap}px) / 4) !important;
                 }
 
                 .grid-row:last-child {
                     margin-bottom: 0 !important;
                 }
 
+                /* 修复单元格尺寸，精准分配空间 */
                 .grid-cell {
-                    width: calc(25% - (3 * ${cellGap}px) / 4) !important;
+                    width: calc((100% - 3 * ${cellGap}px) / 4) !important;
                     height: 100% !important;
                     margin-right: ${cellGap}px !important;
                 }
@@ -643,8 +680,9 @@
                     margin-right: 0 !important;
                 }
 
+                /* 最终字体大小兜底控制 */
                 .tile {
-                    font-size: calc(min(${gridWidthRatio * 100}vw, 420px) * ${tileFontSizeRatio}) !important;
+                    font-size: calc(min(${gridWidthRatio * 100}vw, 400px) * ${tileFontSizeRatio}) !important;
                 }
 
                 @media (orientation: landscape) {
@@ -662,7 +700,8 @@
                     }
                     
                     #grid-container {
-                        width: ${type === 'mobile' ? '45vw' : '300px'} !important;
+                        width: ${type === 'mobile' ? '40vw' : '300px'} !important;
+                        height: ${type === 'mobile' ? '40vw' : '300px'} !important;
                     }
                 }
             `;
@@ -901,6 +940,7 @@
             grid[i][j] = value;
         }
 
+        // 核心修复3：方块渲染精准定位，避免错位
         function render() {
             const tiles = dom.gridContainer.querySelectorAll('.tile');
             tiles.forEach(tile => tile.remove());
@@ -912,10 +952,11 @@
             const gap = parseFloat(getComputedStyle(document.querySelector('.grid-cell')).marginRight);
             const cellCount = 4;
             
+            // 精准计算单元格尺寸，消除浮点误差
             const cellSize = (gridWidth - 2 * padding - (cellCount - 1) * gap) / cellCount;
-            const preciseCellSize = Math.round(cellSize * 1000) / 1000;
-            const preciseGap = Math.round(gap * 1000) / 1000;
-            const precisePadding = Math.round(padding * 1000) / 1000;
+            const preciseCellSize = Math.floor(cellSize * 1000) / 1000;
+            const preciseGap = Math.floor(gap * 1000) / 1000;
+            const precisePadding = Math.floor(padding * 1000) / 1000;
 
             for (let i = 0; i < 4; i++) {
                 for (let j = 0; j < 4; j++) {
@@ -927,6 +968,7 @@
                     tile.classList.add('tile', tileClass);
                     tile.textContent = value;
                     
+                    // 精准计算方块位置，像素级对齐
                     const top = precisePadding + i * (preciseCellSize + preciseGap);
                     const left = precisePadding + j * (preciseCellSize + preciseGap);
                     
@@ -1164,7 +1206,11 @@
                 deviceInfo.screen.height = window.innerHeight;
                 deviceInfo.screen.ratio = window.innerWidth / window.innerHeight;
                 
-                document.getElementById('dynamic-style').textContent = document.getElementById('dynamic-style').textContent.split('/* 设备专属自适应样式 */')[0];
+                // 重新生成样式前先清空原有动态样式
+                const styleContent = document.getElementById('dynamic-style').textContent;
+                const baseStyle = styleContent.split('/* 设备专属自适应样式 */')[0];
+                document.getElementById('dynamic-style').textContent = baseStyle;
+                
                 generateAdaptiveStyles();
                 
                 if (!gameOver) render();
